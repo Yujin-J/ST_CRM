@@ -82,18 +82,6 @@ export const AppRoutes = () => {
                     />
                   ),
                 },
-                {
-                  name: "github",
-                  label: "Sign in with GitHub",
-                  icon: (
-                    <GithubOutlined
-                      style={{
-                        fontSize: 24,
-                        lineHeight: 0,
-                      }}
-                    />
-                  ),
-                },
               ]}
             />
           }

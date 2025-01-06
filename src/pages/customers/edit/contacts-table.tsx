@@ -89,7 +89,7 @@ export const CustomerContactsTable = () => {
 
   // Fetch contacts data from Firebase
   const { data, isLoading } = useList({
-    resource: "contacts",
+    resource: "contact",
     filters: [
       {
         field: "customer",

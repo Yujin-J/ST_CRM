@@ -31,7 +31,7 @@ export const CustomerForm = () => {
 
   const { mutate } = useUpdate();
   const { data, isLoading: isLoadingCustomer } = useOne({
-    resource: "customers",
+    resource: "customer",
     id: params?.id || "",
   });
 
@@ -40,7 +40,7 @@ export const CustomerForm = () => {
   const onFinish = (values: any) => {
     mutate(
       {
-        resource: "customers",
+        resource: "customer",
         id: params?.id || "",
         values: values,
       },
