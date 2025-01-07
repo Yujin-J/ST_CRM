@@ -6,7 +6,7 @@ import {
   FilterDropdown,
   List,
 } from "@refinedev/antd";
-import { useGo } from "@refinedev/core";
+import { useGo, useList} from "@refinedev/core";
 import { SearchOutlined } from "@ant-design/icons";
 import { Input, Space, Table } from "antd";
 import { PaginationTotal } from "../../../components/pagination-total";
@@ -14,32 +14,20 @@ import { CustomAvatar } from "../../../components/custom-avatar";
 import { Text } from "../../../components/text";
 import { currencyNumber } from "../../../utilities/currency-number";
 
-const fakeCustomers = [
-  {
-    id: "1",
-    name: "Acme Corp",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=AC",
-    dealsAggregate: [{ sum: { value: 250000 } }],
-  },
-  {
-    id: "2",
-    name: "TechStart Inc",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=TI",
-    dealsAggregate: [{ sum: { value: 180000 } }],
-  },
-  {
-    id: "3",
-    name: "Global Systems",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=GS",
-    dealsAggregate: [{ sum: { value: 420000 } }],
-  },
-];
-
 export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
   const go = useGo();
   const [searchText, setSearchText] = useState("");
 
-  const filteredCustomers = fakeCustomers.filter((customer) =>
+  // Firestore에서 customer 데이터 가져오기
+  const { data, isLoading } = useList({
+    resource: "customer",
+  });
+
+  // Firestore에서 가져온 데이터를 dataSource로 사용
+  const customers = data?.data || [];
+
+  // 검색 필터링
+  const filteredCustomers = customers.filter((customer) =>
     customer.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
