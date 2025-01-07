@@ -1,4 +1,4 @@
-import { useGo, useList } from "@refinedev/core";
+import { useGo, useList, useCreate } from "@refinedev/core";
 import { Form, Input, Modal, Select } from "antd";
 import { useState } from "react";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
@@ -9,9 +9,10 @@ export const CustomerCreateModal = () => {
   const [visible, setVisible] = useState(true);
 
   // Firestore에서 user 데이터 가져오기
-  const { data: usersData, isLoading: isLoadingUsers } = useList({
+  const { data: usersData } = useList({
     resource: "user",
   });
+  const { mutate: createCustomer } = useCreate();
 
   const users = usersData?.data || []; // Firestore의 user 데이터
 
@@ -24,13 +25,22 @@ export const CustomerCreateModal = () => {
   };
 
   const onFinish = (values: any) => {
-    console.log("Created customer:", values);
-    goToListPage();
+    createCustomer(
+      {
+        resource: "customer",
+        values,
+      },
+      {
+        onSuccess: () => {
+          console.log("Customer added successfully:", values);
+          goToListPage(); // 모달 닫고 고객 목록으로 이동
+        },
+        onError: (error) => {
+          console.error("Failed to add customer:", error);
+        },
+      }
+    );
   };
-
-  const {data, isLoading} = useList({
-    resource: "user"
-  });
 
   return (
     <Modal
