@@ -1,7 +1,24 @@
 import { useGo, useList, useCreate } from "@refinedev/core";
-import { Form, Input, Modal, Select } from "antd";
+import { Form, Input, Modal, Select, InputNumber } from "antd";
 import { useState } from "react";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
+
+const companySizeOptions = [
+  { label: "Small", value: "Small" },
+  { label: "Medium", value: "Medium" },
+  { label: "Large", value: "Large" },
+];
+
+const industryOptions = [
+  { label: "Technology", value: "Technology" },
+  { label: "Finance", value: "Finance" },
+  { label: "Healthcare", value: "Healthcare" },
+];
+
+const businessTypeOptions = [
+  { label: "B2B", value: "B2B" },
+  { label: "B2C", value: "B2C" },
+];
 
 export const CustomerCreateModal = () => {
   const go = useGo();
@@ -59,10 +76,8 @@ export const CustomerCreateModal = () => {
         >
           <Input placeholder="Please enter customer name" />
         </Form.Item>
-        <Form.Item
-          label="Sales owner"
-          name="salesOwnerId"
-          rules={[{ required: true }]}
+        <Form.Item label="Sales owner" name={["salesOwner", "id"]}
+        rules={[{ required: true, message: "Please select a sales owner" }]}
         >
           <Select
             placeholder="Please select sales owner"
@@ -76,6 +91,41 @@ export const CustomerCreateModal = () => {
               ),
             }))}
           />
+        </Form.Item>
+        <Form.Item label="Company size" name="companySize">
+          <Select options={companySizeOptions} />
+        </Form.Item>
+        <Form.Item label="Total revenue" name="totalRevenue">
+          <InputNumber
+            autoFocus
+            addonBefore={"$"}
+            min={0}
+            placeholder="0,00"
+            formatter={(value) =>
+              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            }
+          />
+        </Form.Item>
+        <Form.Item label="Industry" name="industry">
+          <Select options={industryOptions} />
+        </Form.Item>
+        <Form.Item label="Business type" name="businessType">
+          <Select options={businessTypeOptions} />
+        </Form.Item>
+        <Form.Item label="Country" name="country">
+          <Input placeholder="Country" />
+        </Form.Item>
+        <Form.Item label="Website" name="website">
+          <Input placeholder="Website" />
+        </Form.Item>
+        <Form.Item label="Email" name="email">
+          <Input placeholder="Email" />
+        </Form.Item>
+        <Form.Item label="Address" name="address">
+          <Input placeholder="Address" />
+        </Form.Item>
+        <Form.Item label="Phone" name="phone">
+          <Input placeholder="Phone" />
         </Form.Item>
       </Form>
     </Modal>
