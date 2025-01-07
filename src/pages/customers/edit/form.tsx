@@ -1,7 +1,7 @@
 import { Edit } from "@refinedev/antd";
 import { Form, Input, InputNumber, Select, message } from "antd";
 import { useParams } from "react-router-dom";
-import { useOne, useUpdate } from "@refinedev/core";
+import { useOne, useUpdate, useList } from "@refinedev/core";
 import { CustomAvatar } from "../../../components/custom-avatar";
 import { getNameInitials } from "../../../utilities/get-name-initials";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
@@ -9,46 +9,6 @@ import { collection, getDocs } from "firebase/firestore";
 import { firestoreDatabase } from "../../../helpers/firebase/firebaseConfig";
 import React, { useEffect, useState } from "react";
 import { User } from "../../../types";
-
-export const getUsers = async () => {
-  const querySnapshot = await getDocs(collection(firestoreDatabase, "users"));
-  return querySnapshot.docs.map((doc) => {
-    const data = doc.data();
-    return {
-      id: doc.id,
-      name: data.name,
-      avatarUrl: data.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${data.name}`,
-      dealsAggregate: data.dealsAggregate || [{ sum: { value: 0 } }],
-    };
-  });
-};
-
-const FormComponent = () => {
-  const [realUsers, setRealUsers] = useState<User[]>([]);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const data = await getUsers();
-      setRealUsers(data);
-    };
-
-    fetchUsers();
-  }, []);
-
-  return (
-    <div>
-      {realUsers.map((user) => (
-        <div key={user.id}>
-          <img src={user.avatarUrl} alt={user.name} />
-          <p>{user.name}</p>
-          <p>Deals: {user.dealsAggregate[0].sum.value}</p>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-export default FormComponent;3
 
 export const CustomerForm = () => {
   const [form] = Form.useForm();
@@ -61,8 +21,12 @@ export const CustomerForm = () => {
     id: params?.id || "",
   });
 
-  const customer = data?.data;
+  const { data: usersData, isLoading: isLoadingUsers } = useList({
+    resource: "user", // Firestore의 user 컬렉션
+  });
 
+  const customer = data?.data;
+  const users = usersData?.data || []; // Firestore에서 가져온 user 데이터
   const onFinish = (values: any) => {
     mutate(
       {
@@ -113,7 +77,7 @@ export const CustomerForm = () => {
           <Form.Item label="Sales owner" name={["salesOwner", "id"]}>
             <Select
               placeholder="Please select sales owner"
-              options={fakeUsers.map((user) => ({
+              options={users.map((user) => ({
                 value: user.id,
                 label: (
                   <SelectOptionWithAvatar
