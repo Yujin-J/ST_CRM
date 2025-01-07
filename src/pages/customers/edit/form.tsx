@@ -5,24 +5,50 @@ import { useOne, useUpdate } from "@refinedev/core";
 import { CustomAvatar } from "../../../components/custom-avatar";
 import { getNameInitials } from "../../../utilities/get-name-initials";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
+import { collection, getDocs } from "firebase/firestore";
+import { firestoreDatabase } from "../../../helpers/firebase/firebaseConfig";
+import React, { useEffect, useState } from "react";
+import { User } from "../../../types";
 
-const fakeUsers = [
-  {
-    id: "1",
-    name: "John Doe",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=JD",
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=JS",
-  },
-  {
-    id: "3",
-    name: "Mike Wilson",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=MW",
-  },
-];
+export const getUsers = async () => {
+  const querySnapshot = await getDocs(collection(firestoreDatabase, "users"));
+  return querySnapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      name: data.name,
+      avatarUrl: data.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${data.name}`,
+      dealsAggregate: data.dealsAggregate || [{ sum: { value: 0 } }],
+    };
+  });
+};
+
+const FormComponent = () => {
+  const [realUsers, setRealUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const data = await getUsers();
+      setRealUsers(data);
+    };
+
+    fetchUsers();
+  }, []);
+
+  return (
+    <div>
+      {realUsers.map((user) => (
+        <div key={user.id}>
+          <img src={user.avatarUrl} alt={user.name} />
+          <p>{user.name}</p>
+          <p>Deals: {user.dealsAggregate[0].sum.value}</p>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default FormComponent;3
 
 export const CustomerForm = () => {
   const [form] = Form.useForm();
