@@ -28,6 +28,12 @@ export const CustomerCreateModal = () => {
     goToListPage();
   };
 
+  const {data, isLoading} = useList({
+    resource: "user"
+  });
+
+  const users = data?.data || [];
+
   return (
     <Modal
       open={visible}
