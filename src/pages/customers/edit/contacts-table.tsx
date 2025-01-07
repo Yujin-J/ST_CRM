@@ -12,38 +12,6 @@ import { CustomAvatar } from "../../../components/custom-avatar";
 import { ContactStatusTag } from "../../../components/tags";
 import { useList } from "@refinedev/core";
 
-const fakeContacts = [
-  {
-    id: "1",
-    name: "John Smith",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=JS",
-    email: "john@example.com",
-    phone: "+1234567890",
-    jobTitle: "Sales Manager",
-    status: "QUALIFIED",
-    customer: { id: "1" },
-  },
-  {
-    id: "2",
-    name: "Emma Wilson",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=EW",
-    email: "emma@example.com",
-    phone: "+1234567891",
-    jobTitle: "Account Executive",
-    status: "NEW",
-    customer: { id: "1" },
-  },
-  {
-    id: "3",
-    name: "Michael Brown",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=MB",
-    email: "michael@example.com",
-    phone: "+1234567892",
-    jobTitle: "Sales Representative",
-    status: "NEGOTIATION",
-    customer: { id: "1" },
-  },
-];
 
 const statusOptions = [
   { label: "New", value: "NEW" },
@@ -99,6 +67,7 @@ export const CustomerContactsTable = () => {
     ],
   });
 
+  
   // Apply client-side filtering
   const filteredContacts = useMemo(() => {
     const contacts = data?.data || [];

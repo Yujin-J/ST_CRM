@@ -124,6 +124,15 @@ export const CustomerForm = () => {
           </Form.Item>
           <Form.Item label="Website" name="website">
             <Input placeholder="Website" />
+            </Form.Item>
+          <Form.Item label="email" name="email">
+            <Input placeholder="email" />
+          </Form.Item>
+          <Form.Item label="Address" name="Address">
+            <Input placeholder="Address" />
+          </Form.Item>
+          <Form.Item label="Phone" name="Phone">
+            <Input placeholder="Phone" />
           </Form.Item>
         </Form>
       </Edit>
