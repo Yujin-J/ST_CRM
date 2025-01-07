@@ -32,8 +32,6 @@ export const CustomerCreateModal = () => {
     resource: "user"
   });
 
-  const users = data?.data || [];
-
   return (
     <Modal
       open={visible}
