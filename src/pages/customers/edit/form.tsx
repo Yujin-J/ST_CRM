@@ -1,28 +1,11 @@
 import { Edit } from "@refinedev/antd";
 import { Form, Input, InputNumber, Select, message } from "antd";
 import { useParams } from "react-router-dom";
-import { useOne, useUpdate } from "@refinedev/core";
+import { useOne, useUpdate, useList } from "@refinedev/core";
 import { CustomAvatar } from "../../../components/custom-avatar";
 import { getNameInitials } from "../../../utilities/get-name-initials";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
 
-const fakeUsers = [
-  {
-    id: "1",
-    name: "John Doe",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=JD",
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=JS",
-  },
-  {
-    id: "3",
-    name: "Mike Wilson",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=MW",
-  },
-];
 
 export const CustomerForm = () => {
   const [form] = Form.useForm();
@@ -35,8 +18,12 @@ export const CustomerForm = () => {
     id: params?.id || "",
   });
 
-  const customer = data?.data;
+  const { data: usersData, isLoading: isLoadingUsers } = useList({
+    resource: "user", // Firestore의 user 컬렉션
+  });
 
+  const customer = data?.data;
+  const users = usersData?.data || []; // Firestore에서 가져온 user 데이터
   const onFinish = (values: any) => {
     mutate(
       {
@@ -87,7 +74,7 @@ export const CustomerForm = () => {
           <Form.Item label="Sales owner" name={["salesOwner", "id"]}>
             <Select
               placeholder="Please select sales owner"
-              options={fakeUsers.map((user) => ({
+              options={users.map((user) => ({
                 value: user.id,
                 label: (
                   <SelectOptionWithAvatar
