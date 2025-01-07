@@ -12,7 +12,6 @@ import { CustomAvatar } from "../../../components/custom-avatar";
 import { ContactStatusTag } from "../../../components/tags";
 import { useList } from "@refinedev/core";
 
-
 const statusOptions = [
   { label: "New", value: "NEW" },
   {
@@ -67,7 +66,6 @@ export const CustomerContactsTable = () => {
     ],
   });
 
-  
   // Apply client-side filtering
   const filteredContacts = useMemo(() => {
     const contacts = data?.data || [];

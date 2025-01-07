@@ -5,7 +5,10 @@ import { useOne, useUpdate, useList } from "@refinedev/core";
 import { CustomAvatar } from "../../../components/custom-avatar";
 import { getNameInitials } from "../../../utilities/get-name-initials";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
-
+import { collection, getDocs } from "firebase/firestore";
+import { firestoreDatabase } from "../../../helpers/firebase/firebaseConfig";
+import React, { useEffect, useState } from "react";
+import { User } from "../../../types";
 
 export const CustomerForm = () => {
   const [form] = Form.useForm();

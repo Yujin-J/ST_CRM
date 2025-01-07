@@ -11,7 +11,7 @@ import { App as AntdApp, ConfigProvider } from "antd";
 
 import {
   firebaseAuth,
-  firestoreDatabase,
+  firestoreDataProvider,
 } from "./helpers/firebase/firebaseConfig";
 
 import "@refinedev/antd/dist/reset.css";
@@ -24,7 +24,7 @@ const App: React.FC = () => {
         <AntdApp>
           <Refine
             legacyAuthProvider={firebaseAuth.getAuthProvider()}
-            dataProvider={firestoreDatabase.getDataProvider()}
+            dataProvider={firestoreDataProvider.getDataProvider()}
             routerProvider={routerProvider}
             resources={[
               {
