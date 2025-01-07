@@ -1,25 +1,7 @@
-import { useGo } from "@refinedev/core";
+import { useGo, useList } from "@refinedev/core";
 import { Form, Input, Modal, Select } from "antd";
 import { useState } from "react";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
-
-const fakeUsers = [
-  {
-    id: "1",
-    name: "John Doe",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=JD",
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=JS",
-  },
-  {
-    id: "3",
-    name: "Bob Wilson",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=BW",
-  },
-];
 
 export const CustomerCreateModal = () => {
   const go = useGo();
@@ -38,6 +20,12 @@ export const CustomerCreateModal = () => {
     console.log("Created customer:", values);
     goToListPage();
   };
+
+  const {data, isLoading} = useList({
+    resource: "user"
+  });
+
+  const users = data?.data || [];
 
   return (
     <Modal
@@ -63,7 +51,7 @@ export const CustomerCreateModal = () => {
         >
           <Select
             placeholder="Please select sales owner"
-            options={fakeUsers.map((user) => ({
+            options={users.map((user) => ({
               value: user.id,
               label: (
                 <SelectOptionWithAvatar
