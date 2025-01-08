@@ -10,14 +10,14 @@ import { firestoreDatabase } from "../../../helpers/firebase/firebaseConfig";
 import React, { useEffect, useState } from "react";
 import { User } from "../../../types";
 
-export const ContactForm = () => {
+export const CustomerForm = () => {
   const [form] = Form.useForm();
   const params = useParams();
   const [messageApi, contextHolder] = message.useMessage();
 
   const { mutate } = useUpdate();
-  const { data, isLoading: isLoadingContact } = useOne({
-    resource: "contact",
+  const { data, isLoading: isLoadingCustomer } = useOne({
+    resource: "customer",
     id: params?.id || "",
   });
 
@@ -25,27 +25,27 @@ export const ContactForm = () => {
     resource: "user", // Firestore의 user 컬렉션
   });
 
-  const contact = data?.data;
+  const customer = data?.data;
   const users = usersData?.data || []; // Firestore에서 가져온 user 데이터
   const onFinish = (values: any) => {
     mutate(
       {
-        resource: "contact",
+        resource: "customer",
         id: params?.id || "",
         values: values,
       },
       {
         onSuccess: () => {
-          messageApi.success("Contact updated successfully");
+          messageApi.success("Customer updated successfully");
         },
         onError: (error) => {
-          messageApi.error("Error updating Contact");
+          messageApi.error("Error updating customer");
         },
       }
     );
   };
 
-  if (isLoadingContact) {
+  if (isLoadingCustomer) {
     return <div>Loading...</div>;
   }
 
@@ -53,7 +53,7 @@ export const ContactForm = () => {
     <>
       {contextHolder}
       <Edit
-        isLoading={isLoadingContact}
+        isLoading={isLoadingCustomer}
         saveButtonProps={{ onClick: form.submit }}
         breadcrumb={false}
       >
@@ -61,12 +61,12 @@ export const ContactForm = () => {
           form={form}
           layout="vertical"
           onFinish={onFinish}
-          initialValues={contact}
+          initialValues={customer}
         >
           <CustomAvatar
             shape="square"
-            src={contact?.avatarUrl}
-            name={getNameInitials(contact?.name)}
+            src={customer?.avatarUrl}
+            name={getNameInitials(customer?.name)}
             style={{
               width: 96,
               height: 96,
