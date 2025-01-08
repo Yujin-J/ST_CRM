@@ -2,14 +2,21 @@ import { useMemo, useState } from "react";
 import { useList } from "@refinedev/core";
 import { Button, Card, Space, Table } from "antd";
 import { Text } from "../../../components/text";
+import { useParams } from "react-router";
 
 export const InteractionTable = () => {
+  const params = useParams();
   const [dateFilter, setDateFilter] = useState("");
   const [emotionFilter, setEmotionFilter] = useState("");
 
   // Fetch interaction data from Firebase
   const { data, isLoading } = useList({
     resource: "interaction", // Firestore interaction 컬렉션에서 데이터 가져오기
+    filters: [{
+      field: "contact_id",
+      operator: "eq",
+      value: params?.id,
+    },]
   });
 
   // 데이터가 없으면 빈 배열을 반환
