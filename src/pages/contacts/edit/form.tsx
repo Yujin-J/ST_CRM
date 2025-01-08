@@ -16,8 +16,8 @@ export const CustomerForm = () => {
   const [messageApi, contextHolder] = message.useMessage();
 
   const { mutate } = useUpdate();
-  const { data, isLoading: isLoadingCustomer } = useOne({
-    resource: "customer",
+  const { data, isLoading: isLoadingContact } = useOne({
+    resource: "contact",
     id: params?.id || "",
   });
 
@@ -29,19 +29,19 @@ export const CustomerForm = () => {
     resource: "customer"
   })
 
-  const customers = customersData?.data;
+  const customers = customersData?.data || [];
   const customer = data?.data;
   const users = usersData?.data || []; // Firestore에서 가져온 user 데이터
   const onFinish = (values: any) => {
     mutate(
       {
-        resource: "customer",
+        resource: "contact",
         id: params?.id || "",
         values: values,
       },
       {
         onSuccess: () => {
-          messageApi.success("Customer updated successfully");
+          messageApi.success("Contact updated successfully");
         },
         onError: (error) => {
           messageApi.error("Error updating customer");
@@ -50,7 +50,7 @@ export const CustomerForm = () => {
     );
   };
 
-  if (isLoadingCustomer) {
+  if (isLoadingContact) {
     return <div>Loading...</div>;
   }
 
@@ -58,7 +58,7 @@ export const CustomerForm = () => {
     <>
       {contextHolder}
       <Edit
-        isLoading={isLoadingCustomer}
+        isLoading={isLoadingContact}
         saveButtonProps={{ onClick: form.submit }}
         breadcrumb={false}
       >
@@ -82,8 +82,8 @@ export const CustomerForm = () => {
           <Form.Item label="Customer" name={["customer", "id"]}>
             <Select
               placeholder="Please select customer"
-              options={customers?.map((customer) => ({
-                value: customer.id,
+              options={customers.map((customer) => ({
+                value: customer.id ?? "",
                 label: (
                   <SelectOptionWithAvatar
                     name={customer.name}
@@ -95,7 +95,7 @@ export const CustomerForm = () => {
           </Form.Item>
 
           <Form.Item label="Company size" name="companySize">
-            <Select options={companySizeOptions} />
+            <Select options={companySizeOptions} value={customer?.companySize ?? ""}/>
           </Form.Item>
           <Form.Item label="Total revenue" name="totalRevenue">
             <InputNumber
@@ -103,28 +103,31 @@ export const CustomerForm = () => {
               addonBefore={"$"}
               min={0}
               placeholder="0,00"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
             />
           </Form.Item>
           <Form.Item label="Industry" name="industry">
-            <Select options={industryOptions} />
+            <Select options={industryOptions} value={customer?.industry ?? ""}/>
           </Form.Item>
           <Form.Item label="Business type" name="businessType">
-            <Select options={businessTypeOptions} />
+            <Select options={businessTypeOptions} value={customer?.businessType ?? ""}/>
           </Form.Item>
           <Form.Item label="Country" name="country">
-            <Input placeholder="Country" />
+            <Input placeholder="Country" value={customer?.country ?? ""}/>
           </Form.Item>
           <Form.Item label="Website" name="website">
-            <Input placeholder="Website" />
+            <Input placeholder="Website" value={customer?.website ?? ""}/>
             </Form.Item>
           <Form.Item label="email" name="email">
-            <Input placeholder="email" />
+            <Input placeholder="email" value={customer?.email ?? ""}/>
           </Form.Item>
-          <Form.Item label="Address" name="Address">
-            <Input placeholder="Address" />
+          <Form.Item label="Address" name="address">
+            <Input placeholder="Address" value={customer?.address ?? ""}/>
           </Form.Item>
-          <Form.Item label="Phone" name="Phone">
-            <Input placeholder="Phone" />
+          <Form.Item label="Phone" name="phone">
+            <Input placeholder="Phone" value={customer?.phone ?? ""}/>
           </Form.Item>
         </Form>
       </Edit>
