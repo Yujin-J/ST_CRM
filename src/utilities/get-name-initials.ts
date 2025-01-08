@@ -1,8 +1,5 @@
-export const getNameInitials = (name: string, count = 2) => {
-  const initials = name
-    .split(" ")
-    .map((n) => n[0])
-    .join("");
-  const filtered = initials.replace(/[^a-zA-Z]/g, "");
-  return filtered.slice(0, count).toUpperCase();
+export const getNameInitials = (name?: string): string => {
+  if (!name) return "N/A"; // 기본값 설정
+  const [first, last] = name.split(" ");
+  return `${first?.[0] ?? ""}${last?.[0] ?? ""}`.toUpperCase();
 };
