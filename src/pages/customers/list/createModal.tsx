@@ -42,14 +42,18 @@ export const CustomerCreateModal = () => {
   };
 
   const onFinish = (values: any) => {
+    const sanitizedValues = Object.fromEntries(
+      Object.entries(values).map(([keys, value]) => [keys, value ?? ""])
+    );
+
     createCustomer(
       {
         resource: "customer",
-        values,
+        values: sanitizedValues,
       },
       {
         onSuccess: () => {
-          console.log("Customer added successfully:", values);
+          console.log("Customer added successfully:", sanitizedValues);
           goToListPage(); // 모달 닫고 고객 목록으로 이동
         },
         onError: (error) => {
@@ -72,7 +76,7 @@ export const CustomerCreateModal = () => {
         <Form.Item
           label="Customer name"
           name="name"
-          rules={[{ required: true }]}
+          rules={[{ required: true, message: "Please enter customer name" }]}
         >
           <Input placeholder="Please enter customer name" />
         </Form.Item>
