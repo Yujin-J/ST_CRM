@@ -22,13 +22,21 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
   const go = useGo();
   const [searchText, setSearchText] = useState("");
 
-  // Firestore에서 customer 데이터 가져오기
-  const { data, isLoading } = useList({
-    resource: "customer",
+  // Firestore에서 customer 및 user 데이터 가져오기
+  const { data, isLoading } = useList({ resource: "customer" });
+  const { data: usersData, isLoading: isUsersLoading } = useList({
+    resource: "user",
   });
 
-  // Firestore에서 가져온 데이터를 dataSource로 사용
+  // 데이터 변환
   const customers = data?.data || [];
+  const users = usersData?.data || [];
+
+  // user 데이터를 Map 형태로 변환 (id를 키로 사용)
+  const userMap = users.reduce((acc, user) => {
+    acc[user.id] = user;
+    return acc;
+  }, {});
 
   // 검색 필터링
   const filteredCustomers = customers.filter((customer) =>
@@ -39,18 +47,10 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
 
   const handleDelete = (id) => {
     deleteCustomer(
+      { resource: "customer", id:id },
       {
-        resource: "customer",
-        id: id,
-      },
-      {
-        onSuccess: () => {
-          // Optionally, you can refetch the list or show a success message
-          console.log(`Customer with id ${id} deleted successfully.`);
-        },
-        onError: (error) => {
-          console.error("Failed to delete customer:", error);
-        },
+        onSuccess: () => console.log(`Customer ${id} deleted successfully.`),
+        onError: (error) => console.error("Delete failed:", error),
       }
     );
   };
@@ -61,13 +61,7 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
         breadcrumb={false}
         headerButtons={() => (
           <CreateButton
-            onClick={() => {
-              go({
-                to: { resource: "customers", action: "create" },
-                options: { keepQuery: true },
-                type: "replace",
-              });
-            }}
+            onClick={() => go({ to: { resource: "customers", action: "create" } })}
           />
         )}
       >
@@ -77,24 +71,12 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
             total: filteredCustomers.length,
             pageSize: 12,
             pageSizeOptions: ["12", "24", "48", "96"],
-            showTotal: (total) => (
-              <PaginationTotal total={total} entityName="customers" />
-            ),
           }}
           rowKey="id"
         >
           <Table.Column
             dataIndex="name"
             title="Customer title"
-            filterIcon={<SearchOutlined />}
-            filterDropdown={(props) => (
-              <FilterDropdown {...props}>
-                <Input
-                  placeholder="Search Customer"
-                  onChange={(e) => setSearchText(e.target.value)}
-                />
-              </FilterDropdown>
-            )}
             render={(_, record) => (
               <Space>
                 <CustomAvatar
@@ -102,18 +84,30 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
                   name={record.name}
                   src={record.avatarUrl}
                 />
-                <Text style={{ whiteSpace: "nowrap" }}>{record.name}</Text>
+                <Text>{record.name}</Text>
               </Space>
             )}
           />
           <Table.Column
-            dataIndex="totalRevenue"
-            title="Open deals amount"
-            render={(_, customer) => (
-              <Text>
-                {currencyNumber(customer?.dealsAggregate?.[0].sum?.value || 0)}
-              </Text>
-            )}
+            dataIndex="salesOwner"
+            title="Sales Owner"
+            render={(_, customer) => {
+              const salesOwnerId = customer.salesOwner?.id;
+              const salesOwner = userMap[salesOwnerId]; // userMap에서 해당 ID로 찾기
+
+              if (!salesOwner) return "No Owner Found"; // 데이터가 없을 경우 처리
+
+              return (
+                <Space>
+                  <CustomAvatar
+                    shape="circle"
+                    name={salesOwner.name}
+                    src={salesOwner.avatarUrl} // 프로필 사진
+                  />
+                  <Text>{salesOwner.name}</Text> {/* 이름 */}
+                </Space>
+              );
+            }}
           />
           <Table.Column
             fixed="right"
@@ -124,25 +118,23 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
                 <EditButton hideText size="small" recordItemId={value} />
                 <Popconfirm
                   title="Are you sure you want to delete this customer?"
-                  onConfirm={() => handleDelete(value)} // 실제 삭제 로직은 여기서만 실행
-                  okText="Yes"
-                  cancelText="No"
+                  onConfirm={() => handleDelete(value)}
                 >
-                <button
-                  style={{
-                    background: "none",
-                    border: "1px solid #d9d9d9", // 테두리 추가
-                    borderRadius: "4px",         // 모서리를 약간 둥글게
-                    cursor: "pointer",
-                    padding: "4px",          // 버튼 안 여백 추가
-                    color: "red",
-                    display: "flex",             // 아이콘 정렬
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-        >
-          <DeleteOutlined /> {/* 아이콘을 유지 */}
-        </button>
+                  <button
+                    style={{
+                      background: "none",
+                      border: "1px solid #d9d9d9",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      padding: "4px",
+                      color: "red",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <DeleteOutlined />
+                  </button>
                 </Popconfirm>
               </Space>
             )}
