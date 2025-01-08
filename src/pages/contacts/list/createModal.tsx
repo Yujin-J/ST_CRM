@@ -42,14 +42,17 @@ export const ContactCreateModal = () => {
   };
 
   const onFinish = (values: any) => {
+    const sanitizedValues = Object.fromEntries(
+      Object.entries(values).map(([keys, value]) => [keys, value ?? ""])
+    );
     createContact(
       {
         resource: "contact",
-        values,
+        values: sanitizedValues,
       },
       {
         onSuccess: () => {
-          console.log("Contact added successfully:", values);
+          console.log("Contact added successfully:", sanitizedValues);
           goToListPage(); // 모달 닫고 고객 목록으로 이동
         },
         onError: (error) => {
