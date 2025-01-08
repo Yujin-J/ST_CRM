@@ -19,6 +19,12 @@ import {
   CustomerListPage,
 } from "../pages/customers";
 
+import {
+  ContactCreatePage,
+  ContactEditPage,
+  ContactListPage,
+} from "../pages/contacts";
+
 export const AppRoutes = () => {
   return (
     <Routes>
@@ -31,7 +37,6 @@ export const AppRoutes = () => {
             <ThemedLayoutV2
               Title={({ collapsed }) => (
                 <ThemedTitleV2
-                  // collapsed is a boolean value that indicates whether the <Sidebar> is collapsed or not
                   collapsed={collapsed}
                   text="CRM"
                 />
@@ -54,6 +59,13 @@ export const AppRoutes = () => {
           <Route index element={<CustomerListPage />} />
           <Route path="new" element={<CustomerCreatePage />} />
           <Route path="edit/:id" element={<CustomerEditPage />} />
+        </Route>
+
+        {/* Contacts 라우트 추가 */}
+        <Route path="/contacts">
+          <Route index element={<ContactListPage />} />
+          <Route path="new" element={<ContactCreatePage />} />
+          <Route path="edit/:id" element={<ContactEditPage />} />
         </Route>
       </Route>
 
