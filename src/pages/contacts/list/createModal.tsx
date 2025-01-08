@@ -33,6 +33,11 @@ export const ContactCreateModal = () => {
 
   const users = usersData?.data || []; // Firestore의 user 데이터
 
+  const { data: customersData, isLoading: isLoadingCUstomers } = useList({
+    resource: "customer",
+  })
+  const customers = customersData?.data || [];
+
   const goToListPage = () => {
     go({
       to: { resource: "contacts", action: "list" },
@@ -79,17 +84,17 @@ export const ContactCreateModal = () => {
         >
           <Input placeholder="Please enter contact name" />
         </Form.Item>
-        <Form.Item label="Sales owner" name={["salesOwner", "id"]}
-        rules={[{ required: true, message: "Please select a sales owner" }]}
+        <Form.Item label="Customer" name={["Customer", "id"]}
+        rules={[{ required: true, message: "Please select a customer" }]}
         >
           <Select
-            placeholder="Please select sales owner"
-            options={users.map((user) => ({
-              value: user.id,
+            placeholder="Please select customer"
+            options={customers.map((customer) => ({
+              value: customer.id,
               label: (
                 <SelectOptionWithAvatar
-                  name={user.name}
-                  avatarUrl={user.avatarUrl}
+                  name={customer.name}
+                  avatarUrl={customer.avatarUrl}
                 />
               ),
             }))}

@@ -25,6 +25,11 @@ export const CustomerForm = () => {
     resource: "user", // Firestore의 user 컬렉션
   });
 
+  const { data: customersData } = useList({
+    resource: "customer"
+  })
+
+  const customers = customersData?.data;
   const customer = data?.data;
   const users = usersData?.data || []; // Firestore에서 가져온 user 데이터
   const onFinish = (values: any) => {
@@ -74,15 +79,15 @@ export const CustomerForm = () => {
             }}
           />
 
-          <Form.Item label="Sales owner" name={["salesOwner", "id"]}>
+          <Form.Item label="Customer" name={["customer", "id"]}>
             <Select
-              placeholder="Please select sales owner"
-              options={users.map((user) => ({
-                value: user.id,
+              placeholder="Please select customer"
+              options={customers?.map((customer) => ({
+                value: customer.id,
                 label: (
                   <SelectOptionWithAvatar
-                    name={user.name}
-                    avatarUrl={user.avatarUrl}
+                    name={customer.name}
+                    avatarUrl={customer.avatarUrl}
                   />
                 ),
               }))}
@@ -98,9 +103,6 @@ export const CustomerForm = () => {
               addonBefore={"$"}
               min={0}
               placeholder="0,00"
-              formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              }
             />
           </Form.Item>
           <Form.Item label="Industry" name="industry">
