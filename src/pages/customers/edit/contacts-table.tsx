@@ -14,70 +14,54 @@ import { useList } from "@refinedev/core";
 
 const statusOptions = [
   { label: "New", value: "NEW" },
-  {
-    label: "Qualified",
-    value: "QUALIFIED",
-  },
-  {
-    label: "Unqualified",
-    value: "UNQUALIFIED",
-  },
-  {
-    label: "Won",
-    value: "WON",
-  },
-  {
-    label: "Negotiation",
-    value: "NEGOTIATION",
-  },
-  {
-    label: "Lost",
-    value: "LOST",
-  },
-  {
-    label: "Interested",
-    value: "INTERESTED",
-  },
-  {
-    label: "Contacted",
-    value: "CONTACTED",
-  },
-  {
-    label: "Churned",
-    value: "CHURNED",
-  },
+  { label: "Qualified", value: "QUALIFIED" },
+  { label: "Unqualified", value: "UNQUALIFIED" },
+  { label: "Won", value: "WON" },
+  { label: "Negotiation", value: "NEGOTIATION" },
+  { label: "Lost", value: "LOST" },
+  { label: "Interested", value: "INTERESTED" },
+  { label: "Contacted", value: "CONTACTED" },
+  { label: "Churned", value: "CHURNED" },
 ];
 
 export const CustomerContactsTable = () => {
-  const params = useParams();
+  const params = useParams(); // URL 파라미터
   const [nameFilter, setNameFilter] = useState("");
   const [titleFilter, setTitleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
 
-  // Fetch contacts data from Firebase
+  // 서버에서 데이터 가져오기
   const { data, isLoading } = useList({
     resource: "contact",
-    filters: [
-      {
-        field: "customer",
-        operator: "eq",
-        value: params?.id,
-      },
-    ],
   });
 
-  // Apply client-side filtering
+  // 클라이언트 사이드에서 필터링
   const filteredContacts = useMemo(() => {
     const contacts = data?.data || [];
+  
+    return contacts.filter((contact) => {
+      // name과 jobTitle이 존재하는지 확인
+      const nameMatch = contact.name
+        ? contact.name.toLowerCase().includes(nameFilter.toLowerCase())
+        : true;
+      const titleMatch = contact.jobTitle
+        ? contact.jobTitle.toLowerCase().includes(titleFilter.toLowerCase())
+        : true;
+      const statusMatch =
+        statusFilter.length === 0 || statusFilter.includes(contact.status);
+  
+      return (
+        contact.customer?.id === params?.id && nameMatch && titleMatch && statusMatch
+      );
+    });
+  }, [data?.data, params?.id, nameFilter, titleFilter, statusFilter]);
 
-    return contacts.filter(
-      (contact) =>
-        contact.name.toLowerCase().includes(nameFilter.toLowerCase()) &&
-        contact.jobTitle.toLowerCase().includes(titleFilter.toLowerCase()) &&
-        (statusFilter.length === 0 || statusFilter.includes(contact.status))
-    );
-  }, [data?.data, nameFilter, titleFilter, statusFilter]);
+  // 로딩 상태 처리
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
+  // 렌더링
   return (
     <Card
       headStyle={{ borderBottom: "1px solid #D9D9D9", marginBottom: "1px" }}
@@ -96,7 +80,7 @@ export const CustomerContactsTable = () => {
       }
     >
       <Table
-        dataSource={filteredContacts}
+        dataSource={filteredContacts} // 필터링된 데이터를 테이블에 표시
         rowKey="id"
         pagination={{ showSizeChanger: false }}
       >
@@ -113,7 +97,7 @@ export const CustomerContactsTable = () => {
           filterDropdown={(props) => (
             <Input
               placeholder="Search Name"
-              onChange={(e) => setNameFilter(e.target.value)}
+              onChange={(e) => setNameFilter(e.target.value)} // 이름 필터 적용
             />
           )}
         />
@@ -124,7 +108,7 @@ export const CustomerContactsTable = () => {
           filterDropdown={(props) => (
             <Input
               placeholder="Search Title"
-              onChange={(e) => setTitleFilter(e.target.value)}
+              onChange={(e) => setTitleFilter(e.target.value)} // 직함 필터 적용
             />
           )}
         />
@@ -138,7 +122,7 @@ export const CustomerContactsTable = () => {
               mode="multiple"
               placeholder="Select Stage"
               options={statusOptions}
-              onChange={setStatusFilter}
+              onChange={setStatusFilter} // 상태 필터 적용
             />
           )}
         />

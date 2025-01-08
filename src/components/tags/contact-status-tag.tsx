@@ -21,10 +21,19 @@ export type ContactStatus =
   | "WON";
 
 type Props = {
-  status: ContactStatus;
+  status?: ContactStatus; // status가 선택적일 수 있도록 변경
 };
 
 export const ContactStatusTag = ({ status }: Props) => {
+  if (!status) {
+    // status가 undefined일 경우 기본 처리
+    return (
+      <Tag color="default" style={{ textTransform: "capitalize" }}>
+        <MinusCircleOutlined /> Unknown
+      </Tag>
+    );
+  }
+
   let icon: React.ReactNode = null;
   let color: TagProps["color"] = undefined;
 
