@@ -76,7 +76,7 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
         >
           <Table.Column
             dataIndex="name"
-            title="Customer title"
+            title="Customer Name"
             render={(_, record) => (
               <Space>
                 <CustomAvatar
