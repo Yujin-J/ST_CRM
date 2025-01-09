@@ -53,6 +53,10 @@ const App: React.FC = () => {
                 create: "/contacts/new",
                 edit: "/contacts/edit/:id",
               },
+              {
+                name: 'enquiry',
+                list: '/enquiry'
+              }
             ]}
           >
             <AppRoutes />

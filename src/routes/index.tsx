@@ -25,6 +25,9 @@ import {
   ContactListPage,
 } from "../pages/contacts";
 
+// ProcessEnquiry 컴포넌트 import
+import ProcessEnquiry from "../pages/ProcessEnquiry";
+
 export const AppRoutes = () => {
   return (
     <Routes>
@@ -67,6 +70,9 @@ export const AppRoutes = () => {
           <Route path="new" element={<ContactCreatePage />} />
           <Route path="edit/:id" element={<ContactEditPage />} />
         </Route>
+
+        {/* ProcessEnquiry 라우트 추가 */}
+        <Route path="/process-enquiry" element={<ProcessEnquiry />} />
       </Route>
 
       <Route

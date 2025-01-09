@@ -2,7 +2,8 @@ import { db } from "./firebaseConfig";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 
 export const getEnquiries = async () => {
-  const querySnapshot = await getDocs(collection(db, "enquiry"));
+  const querySnapshot = await getDocs(collection(db, "enquiry")); //  
+  console.log('123', querySnapshot)
   return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
