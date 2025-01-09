@@ -33,7 +33,7 @@ export const ContactCreateModal = () => {
 
   const users = usersData?.data || []; // Firestore의 user 데이터
 
-  const { data: customersData, isLoading: isLoadingCUstomers } = useList({
+  const { data: customersData, isLoading: isLoadingCustomers } = useList({
     resource: "customer",
   })
   const customers = customersData?.data || [];
@@ -86,13 +86,13 @@ export const ContactCreateModal = () => {
         >
           <Input placeholder="Please enter contact name" />
         </Form.Item>
-        <Form.Item label="Customer" name={["Customer", "id"]}
+        <Form.Item label="Customer" name={["customer", "id"]}
         rules={[{ required: true, message: "Please select a customer" }]}
         >
           <Select
             placeholder="Please select customer"
             options={customers.map((customer) => ({
-              value: customer.id,
+              value: customer.id ?? "",
               label: (
                 <SelectOptionWithAvatar
                   name={customer.name}
