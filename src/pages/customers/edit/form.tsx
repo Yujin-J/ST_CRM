@@ -61,7 +61,10 @@ export const CustomerForm = () => {
           form={form}
           layout="vertical"
           onFinish={onFinish}
-          initialValues={customer}
+          initialValues={{...customer,
+            Address: customer?.Address || "",
+            Phone: customer?.Phone || "",
+          }}
         >
           <CustomAvatar
             shape="square"
