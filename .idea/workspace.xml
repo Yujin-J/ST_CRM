@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="b84cf55c-12db-41ce-b99c-9f3b910b28c8" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/helpers/api/aiStudioApi.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/helpers/firebase/firestoreHelpers.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pages/ProcessEnquiry.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/helpers/firebase/firebaseConfig.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/helpers/firebase/firebaseConfig.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/index.tsx" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript File" />
+        <option value="TypeScript JSX File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="2rHpFYh9TDpfaZQQ4dV9vmEz8nq" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/yujin/ST_CRM/src/pages/contacts&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\yujin\\ST_CRM\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\yujin\ST_CRM\src\pages\contacts" />
+      <recent name="C:\Users\yujin\ST_CRM\src\pages\Contacts" />
+      <recent name="C:\Users\yujin\ST_CRM" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\yujin\ST_CRM\src\pages" />
+      <recent name="C:\Users\yujin\ST_CRM\src\helpers\firebase" />
+      <recent name="C:\Users\yujin\ST_CRM\src\helpers\api" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-deb605915726-JavaScript-PY-243.22562.220" />
+        <option value="bundled-python-sdk-0fc6c617c4bd-9a18a617cbe4-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.22562.220" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b84cf55c-12db-41ce-b99c-9f3b910b28c8" name="Changes" comment="" />
+      <created>1736225752082</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1736225752082</updated>
+      <workItem from="1736225753234" duration="702000" />
+      <workItem from="1736231863036" duration="6485000" />
+      <workItem from="1736294033073" duration="7503000" />
+      <workItem from="1736305131902" duration="1391000" />
+      <workItem from="1736321442503" duration="78000" />
+      <workItem from="1736321533022" duration="5237000" />
+      <workItem from="1736384047321" duration="327000" />
+      <workItem from="1736384388401" duration="5998000" />
+      <workItem from="1736398210194" duration="56000" />
+      <workItem from="1736398296060" duration="215000" />
+      <workItem from="1736467616064" duration="11138000" />
+      <workItem from="1736498809175" duration="17000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
