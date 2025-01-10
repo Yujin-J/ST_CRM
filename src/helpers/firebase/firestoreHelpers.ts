@@ -15,6 +15,7 @@ export const getInteractions = async () => {
   }
 };
 
+// 사용을 점차 줄여나가 봅시다. 현재는 견본으로 남겨둡니다.
 export const updateEmotion = async (
   id: string,
   emotion: string

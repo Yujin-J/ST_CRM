@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   getInteractions,
-  updateEmotion,
+  updateDbWithChatbot,
 } from "../helpers/firebase/firestoreHelpers"; // Firestore 헬퍼 함수 가져오기
 import { callAIStudio } from "../helpers/api/aiStudioApi"; // AI Studio API 호출 함수 가져오기
 
@@ -18,10 +18,11 @@ const ProcessInteraction: React.FC = () => {
         // 데이터 처리
         for (const interaction of interactions) {
           // AI Studio API 호출하여 감정 분류 수행
-          const classification = await callAIStudio(interaction.notes);
+          const classification = await callAIStudio(interaction.notes, "Review Classfication");
+          console.log(classification);
 
           // Firestore에 Emotion 필드 저장
-          await updateEmotion(interaction.id, classification);
+          await updateDbWithChatbot(interaction.id, "Review Classfication", "interaction", classification);
         }
 
         console.log("Processing completed successfully");

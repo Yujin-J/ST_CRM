@@ -19,8 +19,14 @@ export const InteractionTable = () => {
     },]
   });
 
+  console.log(data);
+
   // 데이터가 없으면 빈 배열을 반환
-  const interactions = data?.data || [];
+  const interactions = (data?.data || []).map((interaction) => ({
+    ...interaction,
+    Classification: interaction.classification?.Classfication || "N/A",
+    Sentiment_score: interaction.classification?.Sentiment_score ?? "N/A",
+  }));
 
   // 필터링 로직
   const filteredInteractions = useMemo(() => {
@@ -62,8 +68,8 @@ export const InteractionTable = () => {
         />
         <Table.Column
           title="Emotion"
-          dataIndex="emotion"
-          render={(emotion) => <Text>{emotion}</Text>}
+          dataIndex="Classification"
+          render={(Classification) => <Text>{Classification}</Text>}
           filterDropdown={(props) => (
             <input
               placeholder="Search Emotion"
@@ -78,8 +84,8 @@ export const InteractionTable = () => {
         />
         <Table.Column
           title="Sentiment Score"
-          dataIndex="sentiment_score"
-          render={(score) => <Text>{score}</Text>}
+          dataIndex="Sentiment_score"
+          render={(Sentiment_score) => <Text>{Sentiment_score}</Text>}
         />
         <Table.Column
           title="Actions"

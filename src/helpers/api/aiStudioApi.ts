@@ -27,7 +27,7 @@ async function loadPromptFromCSV() {
     }
 }
 
-export const callAIStudio = async (user_id: string): Promise<string> => {
+export const callAIStudio = async (userId: string, intent: string): Promise<object> => {
 
     if (!promptData) {
         await loadPromptFromCSV();
@@ -41,7 +41,7 @@ export const callAIStudio = async (user_id: string): Promise<string> => {
                     {
                         parts: [{
                             text: `입력을 분류해주세요.\n다음은 입력과 그에 대응하는 출력 예시입니다:\n\n${promptData}
-                            \n\n입력값: "${user_id}". 위의 예시 중 하나를 골라 결과값만 출력해서 답변해주세요.`,
+                            \n\n입력값: "${userId}". 위의 예시 중 하나를 골라 결과값만 출력하고, 입력된 텍스트에 대한 긍정 감정 점수를 0에서 100 사이로 평가해주세요. 중립 의견은 50점으로 평가하면 됩니다.`,
                         }],
                     },
                 ],
@@ -63,7 +63,11 @@ export const callAIStudio = async (user_id: string): Promise<string> => {
         const sentimentScoreMatch = response.data.candidates[0].content.parts[0].text.match(/(\d+)/);
         const sentimentScore = sentimentScoreMatch ? parseInt(sentimentScoreMatch[1], 10) : null;
 
-        return classification;
+        return {
+            Intent: intent,
+            Classfication: classification,
+            Sentiment_score: sentimentScore
+        };
     } catch (error) {
         console.error("Error calling AI Studio API:", error);
         throw new Error("AI Studio API call failed");
