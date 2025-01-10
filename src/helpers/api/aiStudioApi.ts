@@ -39,8 +39,8 @@ export const callAIStudio = async (userID: string): Promise<string> => {
                 contents: [
                     {
                         parts: [{
-                            text: `입력을 분류하면 돼.\n다음 목록들은 입력과 대응되는 출력 예시야.${promptData}
-                            \n\n이제부터 주어지는 입력값에 대해 감정을 분석해서 위에 올라온 예시의 출력 중 하나를 골라서 작성하면 돼. 입력값: "${userID}"`,
+                            text: `입력을 분류해주세요.\n다음은 입력과 그에 대응하는 출력 예시입니다:\n\n${promptData}
+                            \n\n입력값: "${userID}". 위의 예시 중 하나를 골라 결과값만 출력해서 답변해주세요.`,
                         }],
                     },
                 ],

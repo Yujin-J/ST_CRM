@@ -18,7 +18,7 @@ const ProcessEnquiry: React.FC = () => {
         // 데이터 처리
         for (const enquiry of enquiries) {
           // AI Studio API 호출하여 감정 분류 수행
-          const classification = await callAIStudio(enquiry.id);
+          const classification = await callAIStudio(enquiry.enquiry);
 
           // Firestore에 classification 필드 저장
           await updateClassification(enquiry.id, classification);
