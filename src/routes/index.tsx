@@ -25,8 +25,8 @@ import {
   ContactListPage,
 } from "../pages/contacts";
 
-// ProcessEnquiry 컴포넌트 import
-import ProcessEnquiry from "../pages/ProcessEnquiry";
+// ProcessInteraction 컴포넌트 import
+import ProcessInteraction from "../pages/ProcessInteraction";
 
 export const AppRoutes = () => {
   return (
@@ -71,8 +71,8 @@ export const AppRoutes = () => {
           <Route path="edit/:id" element={<ContactEditPage />} />
         </Route>
 
-        {/* ProcessEnquiry 라우트 추가 */}
-        <Route path="/process-enquiry" element={<ProcessEnquiry />} />
+        {/* ProcessInteraction 라우트 추가 */}
+        <Route path="/process-interaction" element={<ProcessInteraction />} />
       </Route>
 
       <Route

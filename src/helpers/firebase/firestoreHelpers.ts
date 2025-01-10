@@ -1,27 +1,45 @@
 import { firestoreDataProvider } from "./firebaseConfig";
 
-// Firestore에서 enquiry 데이터를 가져오는 함수
-export const getEnquiries = async () => {
+// Firestore에서 interaction 데이터를 가져오는 함수
+export const getInteractions = async () => {
   try {
-    // Fix: Change collection path from "collection/enquiry" to just "enquiry"
-    const enquiries = await firestoreDataProvider.getList({
-      resource: "enquiry",
+    // Fix: Change collection path from "collection/interaction" to just "interaction"
+    const interactions = await firestoreDataProvider.getList({
+      resource: "interaction",
     });
 
-    return enquiries.data;
+    return interactions.data;
   } catch (error) {
-    console.error("Error fetching enquiries:", error);
+    console.error("Error fetching interactions:", error);
     throw error;
   }
 };
 
-export const updateClassification = async (
+export const updateEmotion = async (
   id: string,
-  classification: string
+  emotion: string
 ) => {
   try {
     await firestoreDataProvider.updateData({
-      resource: "enquiry",
+      resource: "interaction",
+      id,
+      variables: { emotion },
+    });
+  } catch (error) {
+    console.error(`Error updating document ${id}:`, error);
+    throw new Error("Failed to update Firestore document");
+  }
+};
+
+export const updateDbWithChatbot = async (
+  id: string,
+  intent: string,
+  db: string,
+  classification: object
+) => {
+  try {
+    await firestoreDataProvider.updateData({
+      resource: db,
       id,
       variables: { classification },
     });
