@@ -20,7 +20,10 @@ export const callAIStudio = async (userID: string): Promise<string> => {
         },
       }
     );
-    return response.data.output || "No classification";
+
+    return (
+      response.data.candidates[0].content.parts[0].text || "No classification"
+    );
   } catch (error) {
     console.error("Error calling AI Studio API:", error);
     throw new Error("AI Studio API call failed");
