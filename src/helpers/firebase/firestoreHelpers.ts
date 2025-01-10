@@ -15,6 +15,7 @@ export const getEnquiries = async () => {
   }
 };
 
+// 사용을 줄여나가야 할 것입니다. 현재는 견본으로 남겨둡니다.
 export const updateClassification = async (
   id: string,
   classification: string
@@ -22,6 +23,24 @@ export const updateClassification = async (
   try {
     await firestoreDataProvider.updateData({
       resource: "enquiry",
+      id,
+      variables: { classification },
+    });
+  } catch (error) {
+    console.error(`Error updating document ${id}:`, error);
+    throw new Error("Failed to update Firestore document");
+  }
+};
+
+export const updateDbWithChatbot = async (
+  id: string,
+  intent: string,
+  db: string,
+  classification: object
+) => {
+  try {
+    await firestoreDataProvider.updateData({
+      resource: db,
       id,
       variables: { classification },
     });
