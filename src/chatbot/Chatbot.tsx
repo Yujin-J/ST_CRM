@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth"; // Firebase 인증 상태 확인
+import { auth } from "../helpers/firebase/firebaseConfig"; // Firebase 설정 import
 import "./Chatbot.css";
+
 type Message = {
     role: string;
     content: string;
@@ -9,9 +12,18 @@ const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false); // 챗봇 창 열림 여부
     const [messages, setMessages] = useState<Message[]>([]); // 메시지 상태
     const [input, setInput] = useState(""); // 사용자 입력
+    const [isAuthenticated, setIsAuthenticated] = useState(false); // 로그인 상태
 
     const API_KEY = import.meta.env.VITE_OPENAI_API_KEY; // OpenAI API 키
     const API_URL = import.meta.env.VITE_OPENAI_API_URL; // OpenAI API URL
+
+    // Firebase 인증 상태 확인
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setIsAuthenticated(!!user); // 사용자 인증 상태 설정
+        });
+        return () => unsubscribe(); // 컴포넌트 언마운트 시 listener 해제
+    }, []);
 
     const toggleChatbot = () => {
         setIsOpen(!isOpen);
@@ -59,6 +71,11 @@ const Chatbot = () => {
         const botResponse = await fetchBotResponse(input);
         setMessages([...newMessages, { role: "bot", content: botResponse }]);
     };
+
+    // 로그인 상태가 아닌 경우 버튼과 창을 렌더링하지 않음
+    if (!isAuthenticated) {
+        return null;
+    }
 
     return (
         <div>
