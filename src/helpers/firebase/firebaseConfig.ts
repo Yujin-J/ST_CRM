@@ -1,8 +1,13 @@
-import { initializeApp } from "firebase/app";
+import {
+  FirebaseAuth,
+  FirestoreDatabase,
+  initializeFirebase,
+} from "refine-firebase";
+
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// Firebase configuration
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
@@ -11,8 +16,13 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase app
+export const firebaseApp = initializeFirebase(firebaseConfig);
+// Firebase services
+export const auth = getAuth(firebaseApp);
+export const googleProvider = new GoogleAuthProvider();
+export const firestoreDatabase = getFirestore(firebaseApp);
 
-// Export Firestore instance
-export const db = getFirestore(app);
+// Export Firestore object as "db" for consistency
+export const firebaseAuth = new FirebaseAuth();
+export const firestoreDataProvider = new FirestoreDatabase();

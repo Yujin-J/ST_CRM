@@ -25,6 +25,9 @@ import {
   ContactListPage,
 } from "../pages/contacts";
 
+// ProcessInteraction 컴포넌트 import
+import ProcessInteraction from "../pages/ProcessInteraction";
+
 export const AppRoutes = () => {
   return (
     <Routes>
@@ -67,6 +70,9 @@ export const AppRoutes = () => {
           <Route path="new" element={<ContactCreatePage />} />
           <Route path="edit/:id" element={<ContactEditPage />} />
         </Route>
+
+        {/* ProcessInteraction 라우트 추가 */}
+        <Route path="/process-interaction" element={<ProcessInteraction />} />
       </Route>
 
       <Route
