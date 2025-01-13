@@ -25,6 +25,12 @@ import {
   ContactListPage,
 } from "../pages/contacts";
 
+import {
+  InteractionCreatePage,
+  InteractionEditPage,
+  InteractionListPage,
+} from "../pages/interaction";
+
 // ProcessInteraction 컴포넌트 import
 import { InteractionTable } from "../pages/ProcessInteraction";
 
@@ -69,6 +75,12 @@ export const AppRoutes = () => {
           <Route index element={<ContactListPage />} />
           <Route path="new" element={<ContactCreatePage />} />
           <Route path="edit/:id" element={<ContactEditPage />} />
+        </Route>
+
+        <Route path="/interaction">
+          <Route index element={<InteractionListPage />} />
+          <Route path="new" element={<InteractionCreatePage />} />
+          <Route path="edit/:id" element={<InteractionEditPage />} />
         </Route>
 
         {/* ProcessInteraction 라우트 추가 */}

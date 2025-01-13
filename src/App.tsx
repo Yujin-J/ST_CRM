@@ -1,6 +1,11 @@
 import { Refine } from "@refinedev/core";
 import { RefineThemes } from "@refinedev/antd";
-import { DashboardOutlined, ShopOutlined, ContactsOutlined, CommentOutlined } from "@ant-design/icons";
+import {
+  DashboardOutlined,
+  ShopOutlined,
+  ContactsOutlined,
+  CommentOutlined,
+} from "@ant-design/icons";
 
 import routerProvider, {
   UnsavedChangesNotifier,
@@ -62,7 +67,7 @@ const App: React.FC = () => {
               },
               {
                 name: "interaction",
-                list: "/interaction",
+                list: "/interaction", // 기본 경로를 설정하면 Refine의 기본 테이블 UI가 사용됩니다.
                 show: "/interaction/:id",
                 create: "/interaction/new",
                 edit: "/interaction/edit/:id",

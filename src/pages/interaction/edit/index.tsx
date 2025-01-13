@@ -1,5 +1,4 @@
 import { Col, Row } from "antd";
-
 import { CustomerForm } from "./form";
 
 export const InteractionEditPage = () => {
