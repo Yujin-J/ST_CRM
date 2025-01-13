@@ -5,7 +5,7 @@ import { Area, type AreaConfig } from "@ant-design/plots";
 import { Card, Skeleton } from "antd";
 import { Text } from "../../../../components/text";
 
-type Type = "companies" | "contacts" | "deals";
+type Type = "customers" | "contacts" | "interactions";
 
 type Props = {
   resource: Type;
@@ -148,7 +148,7 @@ const variants: {
     data: { index: string; value: number }[];
   };
 } = {
-  companies: {
+  customers: {
     primaryColor: "#1677FF",
     secondaryColor: "#BAE0FF",
     icon: (
@@ -161,7 +161,7 @@ const variants: {
         />
       </IconWrapper>
     ),
-    title: "Number of companies",
+    title: "Number of customers",
     data: [
       {
         index: "1",
@@ -226,7 +226,7 @@ const variants: {
       },
     ],
   },
-  deals: {
+  interactions: {
     primaryColor: "#FA541C",
     secondaryColor: "#FFD8BF",
     icon: (
@@ -239,7 +239,7 @@ const variants: {
         />
       </IconWrapper>
     ),
-    title: "Total deals in pipeline",
+    title: "Number of  interactions",
     data: [
       {
         index: "1",
