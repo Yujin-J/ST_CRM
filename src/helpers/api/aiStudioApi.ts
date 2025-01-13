@@ -27,49 +27,58 @@ async function loadPromptFromCSV() {
     }
 }
 
-export const callAIStudio = async (userId: string, intent: string): Promise<object> => {
-
+export const callAIStudio = async (
+    inputs: Array<{ id: string; notes: string }>,
+    intent: string
+  ): Promise<Array<{ id: string; Classfication: string; Sentiment_score: number | null }>> => {
     if (!promptData) {
-        await loadPromptFromCSV();
+      await loadPromptFromCSV();
     }
-
+  
     try {
-        const response = await axios.post(
-            `${AI_API_URL}?key=${AI_API_KEY}`,
-            {
-                contents: [
-                    {
-                        parts: [{
-                            text: `입력을 분류해주세요.\n다음은 입력과 그에 대응하는 출력 예시입니다:\n\n${promptData}
-                            \n\n입력값: "${userId}". 위의 예시 중 하나를 골라 결과값만 출력하고, 입력된 텍스트에 대한 긍정 감정 점수를 0에서 100 사이로 평가해주세요. 중립 의견은 50점으로 평가하면 됩니다.`,
-                        }],
-                    },
-                ],
-            },
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-
-        console.log(response.data.candidates[0].content.parts[0].text);
-        let classification = response.data.candidates[0].content.parts[0].text || "No classification";
-        const splitIndex = classification.indexOf("\n\n");
-        if (splitIndex !== -1) {
-            classification = classification.substring(0, splitIndex).trim();
+      // API 요청 데이터 구성
+      const contents = inputs.map((input) => ({
+        role: "user", // 고정된 role 값
+        parts: [
+          {
+            text: `입력을 분류해주세요.\n다음은 입력과 그에 대응하는 출력 예시입니다:\n\n${promptData}\n\n입력값: "${input.notes}". 위의 예시 중 하나를 골라 결과값만 출력하고, 입력된 텍스트에 대한 긍정 감정 점수를 0에서 100 사이로 평가해주세요. 중립 의견은 50점으로 평가하면 됩니다.`,
+          },
+        ],
+      }));
+  
+      console.log("Request Contents:", JSON.stringify({ contents }));
+  
+      // API 요청
+      const response = await axios.post(
+        `${AI_API_URL}?key=${AI_API_KEY}`,
+        { contents },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-
-        const sentimentScoreMatch = response.data.candidates[0].content.parts[0].text.match(/(\d+)/);
+      );
+  
+      // 응답 데이터를 매핑
+      return inputs.map((input, index) => {
+        const responseText = response.data.candidates[index]?.content.parts[0]?.text || "No classification";
+  
+        const splitIndex = responseText.indexOf("\n\n");
+        const classification = splitIndex !== -1
+          ? responseText.substring(0, splitIndex).trim()
+          : responseText;
+  
+        const sentimentScoreMatch = responseText.match(/(\d+)/);
         const sentimentScore = sentimentScoreMatch ? parseInt(sentimentScoreMatch[1], 10) : null;
-
+  
         return {
-            Intent: intent,
-            Classfication: classification,
-            Sentiment_score: sentimentScore
+          id: input.id,
+          Classification: classification,
+          Sentiment_score: sentimentScore,
         };
+      });
     } catch (error) {
-        console.error("Error calling AI Studio API:", error);
-        throw new Error("AI Studio API call failed");
+      console.error("Error response data:", error.response?.data);
+      throw new Error("AI Studio API call failed");
     }
-};
+  };
