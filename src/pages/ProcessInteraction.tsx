@@ -15,14 +15,20 @@ const ProcessInteraction: React.FC = () => {
         // Firestore에서 interaction 데이터 가져오기
         const interactions = await getInteractions();
 
-        // 데이터 처리
-        for (const interaction of interactions) {
-          // AI Studio API 호출하여 감정 분류 수행
-          const classification = await callAIStudio(interaction.notes, "Review Classfication");
-          console.log(classification);
+        // 모든 interaction 데이터를 통합
+        const notes = interactions.map((interaction) => ({
+          id: interaction.id, // 각 interaction의 ID
+          notes: interaction.notes, // 분류할 텍스트
+        }));
 
-          // Firestore에 Emotion 필드 저장
-          await updateDbWithChatbot(interaction.id, "Review Classfication", "interaction", classification);
+        console.log(notes);
+
+        // AI Studio API 호출하여 통합된 데이터를 처리
+        const classifications = await callAIStudio(notes, "Review Classification");
+
+        // Firestore에 각 결과 업데이트
+        for (const { id, classification } of classifications) {
+          await updateDbWithChatbot(id, "Review Classification", "interaction", classification);
         }
 
         console.log("Processing completed successfully");
