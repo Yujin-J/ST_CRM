@@ -16,12 +16,15 @@ import {
 
 import "@refinedev/antd/dist/reset.css";
 import { AppRoutes } from "./routes";
+import Chatbot from "./chatbot/Chatbot"; // Chatbot 컴포넌트 import
 
 const App: React.FC = () => {
   return (
     <BrowserRouter>
       <ConfigProvider theme={RefineThemes.Blue}>
         <AntdApp>
+            {/* 항상 렌더링되는 Chatbot 컴포넌트 */}
+            <Chatbot />
           <Refine
             legacyAuthProvider={firebaseAuth.getAuthProvider()}
             dataProvider={firestoreDataProvider.getDataProvider()}
@@ -58,16 +61,16 @@ const App: React.FC = () => {
                 },
               },
               {
-                name: 'interaction',
-                list: '/interaction',
+                name: "interaction",
+                list: "/interaction",
                 show: "/interaction/:id",
                 create: "/interaction/new",
                 edit: "/interaction/edit/:id",
                 meta: {
                   label: "Interaction",
-                  icon: <CommentOutlined/>,
+                  icon: <CommentOutlined />,
                 },
-              }
+              },
             ]}
           >
             <AppRoutes />
