@@ -1,6 +1,6 @@
 import { Refine } from "@refinedev/core";
 import { RefineThemes } from "@refinedev/antd";
-import { DashboardOutlined, ShopOutlined } from "@ant-design/icons";
+import { DashboardOutlined, ShopOutlined, ContactsOutlined, CommentOutlined } from "@ant-design/icons";
 
 import routerProvider, {
   UnsavedChangesNotifier,
@@ -52,10 +52,21 @@ const App: React.FC = () => {
                 show: "/contacts/:id",
                 create: "/contacts/new",
                 edit: "/contacts/edit/:id",
+                meta: {
+                  label: "Contacts",
+                  icon: <ContactsOutlined />,
+                },
               },
               {
-                name: 'enquiry',
-                list: '/enquiry'
+                name: 'interaction',
+                list: '/interaction',
+                show: "/interaction/:id",
+                create: "/interaction/new",
+                edit: "/interaction/edit/:id",
+                meta: {
+                  label: "Interaction",
+                  icon: <CommentOutlined/>,
+                },
               }
             ]}
           >
