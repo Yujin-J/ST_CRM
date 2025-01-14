@@ -1,196 +1,155 @@
+import React from "react";
 import { Edit } from "@refinedev/antd";
-import { Form, Input, InputNumber, Select, message } from "antd";
+import { Form, Input, Select, DatePicker, message } from "antd";
 import { useParams } from "react-router-dom";
+import dayjs, { Dayjs } from "dayjs";
 import { useOne, useUpdate, useList } from "@refinedev/core";
-import { CustomAvatar } from "../../../components/custom-avatar";
-import { getNameInitials } from "../../../utilities/get-name-initials";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
-import { collection, getDocs } from "firebase/firestore";
-import { firestoreDatabase } from "../../../helpers/firebase/firebaseConfig";
-import React, { useEffect, useState } from "react";
-import { User } from "../../../types";
 
-export const CustomerForm = () => {
+/**
+ * interaction 편집 폼
+ * 
+ * - contact_id: Select로 contact 리스트에서 선택
+ * - date: DatePicker
+ * - notes: 긴 내용 입력 위해 TextArea
+ * 
+ * classification, sentiment는 사용자 입력 없이 별도 로직으로 업데이트된다고 가정.
+ */
+export const InteractionEdit = () => {
   const [form] = Form.useForm();
-  const params = useParams();
+  const { id } = useParams<{ id: string }>();
   const [messageApi, contextHolder] = message.useMessage();
 
-  const { mutate } = useUpdate();
-  const { data, isLoading: isLoadingContact } = useOne({
+  // 1) 수정할 interaction 가져오기
+  const {
+    data: interactionData,
+    isLoading: isInteractionLoading,
+  } = useOne({
+    resource: "interaction",
+    id: id ?? "",
+  });
+  const interaction = interactionData?.data;
+
+  // 2) contact 목록 가져오기 (contact_id 선택 시 사용)
+  const {
+    data: contactsData,
+    isLoading: isContactsLoading,
+  } = useList({
     resource: "contact",
-    id: params?.id || "",
   });
+  const contacts = contactsData?.data || [];
 
-  const { data: usersData, isLoading: isLoadingUsers } = useList({
-    resource: "user", // Firestore의 user 컬렉션
-  });
+  // 3) interaction 업데이트 훅
+  const { mutate: updateInteraction, isLoading: isUpdating } = useUpdate();
 
-  const { data: customersData } = useList({
-    resource: "customer"
-  })
+  // 4) 폼 전송 핸들러
+  const onFinish = async (values: any) => {
+    try {
+      // datepicker의 값이 dayjs 객체이므로, DB 저장에 맞게 변환
+      // 필요 없다면 그대로 values.date 만 쓰시면 됩니다.
+      const formattedDate = values.date
+        ? dayjs(values.date).format("YYYY-MM-DD")
+        : null;
 
-  const customers = customersData?.data || [];
-  const customer = data?.data;
-  const users = usersData?.data || []; // Firestore에서 가져온 user 데이터
-  const onFinish = (values: any) => {
-    mutate(
-      {
-        resource: "contact",
-        id: params?.id || "",
-        values: values,
-      },
-      {
-        onSuccess: () => {
-          messageApi.success("Contact updated successfully");
+      const payload = {
+        contact_id: values.contact_id,
+        date: formattedDate,
+        notes: values.notes ?? "",
+        // classification, sentiment 등은 폼에서 입력받지 않음
+      };
+
+      updateInteraction(
+        {
+          resource: "interaction",
+          id: id ?? "",
+          values: payload,
         },
-        onError: (error) => {
-          messageApi.error("Error updating customer");
-        },
-      }
-    );
+        {
+          onSuccess: () => {
+            messageApi.success("Interaction updated successfully");
+          },
+          onError: (error) => {
+            messageApi.error("Error updating interaction");
+            console.error(error);
+          },
+        }
+      );
+    } catch (error) {
+      console.error("onFinish error:", error);
+    }
   };
 
-  if (isLoadingContact) {
+  // 5) 로딩 처리
+  if (isInteractionLoading) {
     return <div>Loading...</div>;
   }
+
+  // 6) initialValues 설정
+  const initialValues = {
+    contact_id: interaction?.contact_id,
+    notes: interaction?.notes,
+    date: interaction?.date ? dayjs(interaction.date) : null,
+  };
 
   return (
     <>
       {contextHolder}
       <Edit
-        isLoading={isLoadingContact}
-        saveButtonProps={{ onClick: form.submit }}
+        isLoading={isInteractionLoading || isContactsLoading || isUpdating}
+        saveButtonProps={{
+          onClick: form.submit,
+        }}
         breadcrumb={false}
       >
         <Form
           form={form}
           layout="vertical"
           onFinish={onFinish}
-          initialValues={customer}
+          initialValues={initialValues}
         >
-          <CustomAvatar
-            shape="square"
-            src={customer?.avatarUrl}
-            name={getNameInitials(customer?.name)}
-            style={{
-              width: 96,
-              height: 96,
-              marginBottom: "24px",
-            }}
-          />
-
-          <Form.Item label="Customer" name={["customer", "id"]}>
+          {/* Contact ID 선택 */}
+          <Form.Item
+            label="Contact"
+            name="contact_id"
+            rules={[{ required: true, message: "Please select a contact" }]}
+          >
             <Select
-              placeholder="Please select customer"
-              options={customers.map((customer) => ({
-                value: customer.id ?? "",
+              placeholder="Select a contact"
+              options={contacts.map((contact) => ({
+                value: contact.id ?? "",
                 label: (
                   <SelectOptionWithAvatar
-                    name={customer.name}
-                    avatarUrl={customer.avatarUrl}
+                    name={contact.name}
+                    avatarUrl={contact.avatarUrl}
                   />
                 ),
               }))}
             />
           </Form.Item>
 
-          <Form.Item label="Company size" name="companySize">
-            <Select options={companySizeOptions} value={customer?.companySize ?? ""}/>
-          </Form.Item>
-          <Form.Item label="Total revenue" name="totalRevenue">
-            <InputNumber
-              autoFocus
-              addonBefore={"$"}
-              min={0}
-              placeholder="0,00"
-              formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              }
+          {/* Date */}
+          <Form.Item
+            label="Date"
+            name="date"
+            rules={[{ required: true, message: "Please select a date" }]}
+          >
+            <DatePicker
+              style={{ width: "100%" }}
+              placeholder="Select date"
+              format="YYYY-MM-DD"
             />
           </Form.Item>
-          <Form.Item label="Industry" name="industry">
-            <Select options={industryOptions} value={customer?.industry ?? ""}/>
-          </Form.Item>
-          <Form.Item label="Business type" name="businessType">
-            <Select options={businessTypeOptions} value={customer?.businessType ?? ""}/>
-          </Form.Item>
-          <Form.Item label="Country" name="country">
-            <Input placeholder="Country" value={customer?.country ?? ""}/>
-          </Form.Item>
-          <Form.Item label="Website" name="website">
-            <Input placeholder="Website" value={customer?.website ?? ""}/>
-            </Form.Item>
-          <Form.Item label="email" name="email">
-            <Input placeholder="email" value={customer?.email ?? ""}/>
-          </Form.Item>
-          <Form.Item label="Address" name="address">
-            <Input placeholder="Address" value={customer?.address ?? ""}/>
-          </Form.Item>
-          <Form.Item label="Phone" name="phone">
-            <Input placeholder="Phone" value={customer?.phone ?? ""}/>
+
+          {/* Notes (긴 텍스트 입력) */}
+          <Form.Item
+            label="Notes"
+            name="notes"
+            rules={[{ required: true, message: "Please enter notes" }]}
+          >
+            <Input.TextArea rows={4} placeholder="Enter your review or notes" />
           </Form.Item>
         </Form>
       </Edit>
     </>
   );
 };
-
-const companySizeOptions = [
-  { label: "Enterprise", value: "ENTERPRISE" },
-  {
-    label: "Large",
-    value: "LARGE",
-  },
-  {
-    label: "Medium",
-    value: "MEDIUM",
-  },
-  {
-    label: "Small",
-    value: "SMALL",
-  },
-];
-
-const industryOptions = [
-  { label: "Aerospace", value: "AEROSPACE" },
-  { label: "Agriculture", value: "AGRICULTURE" },
-  { label: "Automotive", value: "AUTOMOTIVE" },
-  { label: "Chemicals", value: "CHEMICALS" },
-  { label: "Construction", value: "CONSTRUCTION" },
-  { label: "Defense", value: "DEFENSE" },
-  { label: "Education", value: "EDUCATION" },
-  { label: "Energy", value: "ENERGY" },
-  { label: "Financial Services", value: "FINANCIAL_SERVICES" },
-  { label: "Food and Beverage", value: "FOOD_AND_BEVERAGE" },
-  { label: "Government", value: "GOVERNMENT" },
-  { label: "Healthcare", value: "HEALTHCARE" },
-  { label: "Hospitality", value: "HOSPITALITY" },
-  { label: "Industrial Manufacturing", value: "INDUSTRIAL_MANUFACTURING" },
-  { label: "Insurance", value: "INSURANCE" },
-  { label: "Life Sciences", value: "LIFE_SCIENCES" },
-  { label: "Logistics", value: "LOGISTICS" },
-  { label: "Media", value: "MEDIA" },
-  { label: "Mining", value: "MINING" },
-  { label: "Nonprofit", value: "NONPROFIT" },
-  { label: "Other", value: "OTHER" },
-  { label: "Pharmaceuticals", value: "PHARMACEUTICALS" },
-  { label: "Professional Services", value: "PROFESSIONAL_SERVICES" },
-  { label: "Real Estate", value: "REAL_ESTATE" },
-  { label: "Retail", value: "RETAIL" },
-  { label: "Technology", value: "TECHNOLOGY" },
-  { label: "Telecommunications", value: "TELECOMMUNICATIONS" },
-  { label: "Transportation", value: "TRANSPORTATION" },
-  { label: "Utilities", value: "UTILITIES" },
-];
-
-const businessTypeOptions = [
-  { label: "B2B", value: "B2B" },
-  {
-    label: "B2C",
-    value: "B2C",
-  },
-  {
-    label: "B2G",
-    value: "B2G",
-  },
-];
