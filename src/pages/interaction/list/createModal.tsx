@@ -1,141 +1,121 @@
 import { useGo, useList, useCreate } from "@refinedev/core";
-import { Form, Input, Modal, Select, InputNumber } from "antd";
+import { Form, Input, Modal, Select, DatePicker } from "antd";
 import { useState } from "react";
+import dayjs, { Dayjs } from "dayjs";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
-
-const companySizeOptions = [
-  { label: "Small", value: "Small" },
-  { label: "Medium", value: "Medium" },
-  { label: "Large", value: "Large" },
-];
-
-const industryOptions = [
-  { label: "Technology", value: "Technology" },
-  { label: "Finance", value: "Finance" },
-  { label: "Healthcare", value: "Healthcare" },
-];
-
-const businessTypeOptions = [
-  { label: "B2B", value: "B2B" },
-  { label: "B2C", value: "B2C" },
-];
 
 export const InteractionCreateModal = () => {
   const go = useGo();
   const [form] = Form.useForm();
   const [visible, setVisible] = useState(true);
 
-  // Firestore에서 user 데이터 가져오기
-  const { data: usersData } = useList({
-    resource: "user",
+  // 1) contacts 데이터 가져오기 (이름 + 아바타용)
+  const { data: contactsData } = useList({
+    resource: "contact",
   });
-  const { mutate: createContact } = useCreate();
+  const contacts = contactsData?.data || [];
 
-  const users = usersData?.data || []; // Firestore의 user 데이터
+  // 2) interaction 생성 useCreate 훅
+  const { mutate: createInteraction } = useCreate();
 
-  const { data: customersData, isLoading: isLoadingCustomers } = useList({
-    resource: "customer",
-  })
-  const customers = customersData?.data || [];
-
-  const goToListPage = () => {
+  // 모달 닫고 리스트 페이지로 이동
+  const goToInteractionListPage = () => {
     go({
-      to: { resource: "contacts", action: "list" },
+      to: { resource: "interaction", action: "list" },
       options: { keepQuery: true },
       type: "replace",
     });
   };
 
+  // 폼 전송 처리
   const onFinish = (values: any) => {
-    const sanitizedValues = Object.fromEntries(
-      Object.entries(values).map(([keys, value]) => [keys, value ?? ""])
-    );
-    createContact(
+    // 날짜를 Date 객체 혹은 문자열로 저장하고 싶다면 이곳에서 변환
+    // 예) 문자열로 저장할 경우:
+    const dateValue = values.date ? dayjs(values.date).format("YYYY-MM-DD") : "";
+
+    // interaction에 필요한 필드만 추출
+    const payload = {
+      contact_id: values.contact_id || "",
+      date: dateValue,
+      notes: values.notes || "",
+      // classification, sentiment 등의 필드는 사용자가 직접 입력하지 않으므로 생략
+      // 예: classification: "",
+      //     sentiment: "",
+    };
+
+    createInteraction(
       {
-        resource: "contact",
-        values: sanitizedValues,
+        resource: "interaction",
+        values: payload,
       },
       {
         onSuccess: () => {
-          console.log("Contact added successfully:", sanitizedValues);
-          goToListPage(); // 모달 닫고 고객 목록으로 이동
+          console.log("Interaction created successfully:", payload);
+          goToInteractionListPage(); // 생성 후 이동
         },
         onError: (error) => {
-          console.error("Failed to add contact:", error);
+          console.error("Failed to create interaction:", error);
         },
       }
     );
   };
 
-
-
   return (
     <Modal
       open={visible}
       onOk={form.submit}
-      onCancel={goToListPage}
+      onCancel={goToInteractionListPage}
       mask={true}
-      title="Add new contact"
+      title="Add New Interaction"
       width={512}
     >
       <Form form={form} layout="vertical" onFinish={onFinish}>
+        {/* Contact 선택 */}
         <Form.Item
-          label="Contact name"
-          name="name"
-          rules={[{ required: true }]}
-        >
-          <Input placeholder="Please enter contact name" />
-        </Form.Item>
-        <Form.Item label="Customer" name={["customer", "id"]}
-        rules={[{ required: true, message: "Please select a customer" }]}
+          label="Contact"
+          name="contact_id"
+          rules={[{ required: true, message: "Please select a contact" }]}
         >
           <Select
-            placeholder="Please select customer"
-            options={customers.map((customer) => ({
-              value: customer.id ?? "",
+            placeholder="Select a contact"
+            // contact db에 있는 name, avatarUrl 정보를 띄워주고 value는 contact의 id
+            options={contacts.map((contact) => ({
+              value: contact.id ?? "",
               label: (
                 <SelectOptionWithAvatar
-                  name={customer.name}
-                  avatarUrl={customer.avatarUrl}
+                  name={contact.name}
+                  avatarUrl={contact.avatarUrl} // 없으면 placeholder 또는 이니셜처리
                 />
               ),
             }))}
           />
         </Form.Item>
-        <Form.Item label="Company size" name="companySize">
-          <Select options={companySizeOptions} />
-        </Form.Item>
-        <Form.Item label="Total revenue" name="totalRevenue">
-          <InputNumber
-            autoFocus
-            addonBefore={"$"}
-            min={0}
-            placeholder="0,00"
-            formatter={(value) =>
-              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            }
+
+        {/* Date 입력 */}
+        <Form.Item
+          label="Date"
+          name="date"
+          rules={[{ required: true, message: "Please select a date" }]}
+        >
+          <DatePicker
+            style={{ width: "100%" }}
+            placeholder="Select date"
+            // 날짜 형식 지정 예시
+            format="YYYY-MM-DD"
           />
         </Form.Item>
-        <Form.Item label="Industry" name="industry">
-          <Select options={industryOptions} />
-        </Form.Item>
-        <Form.Item label="Business type" name="businessType">
-          <Select options={businessTypeOptions} />
-        </Form.Item>
-        <Form.Item label="Country" name="country">
-          <Input placeholder="Country" />
-        </Form.Item>
-        <Form.Item label="Website" name="website">
-          <Input placeholder="Website" />
-        </Form.Item>
-        <Form.Item label="Email" name="email">
-          <Input placeholder="Email" />
-        </Form.Item>
-        <Form.Item label="Address" name="address">
-          <Input placeholder="Address" />
-        </Form.Item>
-        <Form.Item label="Phone" name="phone">
-          <Input placeholder="Phone" />
+
+        {/* Notes 입력 (리뷰) */}
+        <Form.Item
+          label="Notes"
+          name="notes"
+          rules={[{ required: true, message: "Please enter a review" }]}
+        >
+          <Input.TextArea
+            rows={4}
+            placeholder="Enter your review or notes here"
+            allowClear
+          />
         </Form.Item>
       </Form>
     </Modal>
