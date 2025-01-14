@@ -1,37 +1,80 @@
 import React, { useState, useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth"; // Firebase 인증 상태 확인
-import { auth } from "../helpers/firebase/firebaseConfig"; // Firebase 설정 import
+import { onAuthStateChanged } from "firebase/auth"; 
+import { auth } from "../helpers/firebase/firebaseConfig";
+import { getInteractions, getMultipleCollections } from "../helpers/firebase/firestoreHelpers"; 
 import "./Chatbot.css";
 
 type Message = {
     role: string;
     content: string;
-    timestamp: string; // 타임스탬프 추가
+    timestamp: string; 
 };
 
 const Chatbot = () => {
-    const [isOpen, setIsOpen] = useState(false); // 챗봇 창 열림 여부
-    const [messages, setMessages] = useState<Message[]>([]); // 메시지 상태
-    const [input, setInput] = useState(""); // 사용자 입력
-    const [isAuthenticated, setIsAuthenticated] = useState(false); // 로그인 상태
+    const [isOpen, setIsOpen] = useState(false);
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [input, setInput] = useState("");
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    const API_KEY = import.meta.env.VITE_OPENAI_API_KEY; // OpenAI API 키
-    const API_URL = import.meta.env.VITE_OPENAI_API_URL; // OpenAI API URL
+    // 🔹 DB 전체 내용을 문자열로 저장할 상태 (여기서는 interaction만)
+    const [dbData, setDbData] = useState<string>("");
 
-    // Firebase 인증 상태 확인
+    // OpenAI API 키 & URL (Vite 환경변수)
+    const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+    const API_URL = import.meta.env.VITE_OPENAI_API_URL;
+
+    // 1) Firebase 인증 상태 확인
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setIsAuthenticated(!!user); // 사용자 인증 상태 설정
+            setIsAuthenticated(!!user);
         });
-        return () => unsubscribe(); // 컴포넌트 언마운트 시 listener 해제
+        return () => unsubscribe();
+    }, []);
+
+    // 2) 컴포넌트 마운트 시, Firestore에서 interaction 전체 불러오기
+    useEffect(() => {
+        const loadInteractionData = async () => {
+            try {
+                // (1) interaction 컬렉션 가져오기
+                const interactions = await getMultipleCollections(["interaction", "contact", "customer"]);
+                // interactions 예: [{ id: 'abc', notes: '...', classification: {...}}, ...]
+
+                // (2) 문자열화
+                const dbString = JSON.stringify(interactions, null, 2);
+                setDbData(dbString);
+            } catch (error) {
+                console.error("Error loading interaction data:", error);
+            }
+        };
+
+        loadInteractionData();
     }, []);
 
     const toggleChatbot = () => {
         setIsOpen(!isOpen);
     };
 
+    // 3) OpenAI API 호출 로직
     const fetchBotResponse = async (userMessage: string): Promise<string> => {
         try {
+            // system 메시지에 interaction 데이터 전부 주입
+            const messages = [
+                {
+                    role: "system",
+                    content: `
+You have the following DB content (from 'interaction' collection, in JSON):
+${dbData}
+
+Use it to answer the user's queries. If no relevant info is found, say "I am not sure." 
+Do not reveal the entire JSON unless asked for details.
+`,
+                },
+                {
+                    role: "user",
+                    content: userMessage,
+                },
+            ];
+
             const response = await fetch(API_URL, {
                 method: "POST",
                 headers: {
@@ -40,7 +83,7 @@ const Chatbot = () => {
                 },
                 body: JSON.stringify({
                     model: "gpt-4",
-                    messages: [{ role: "user", content: userMessage }],
+                    messages,
                     max_tokens: 500,
                     temperature: 0.7,
                 }),
@@ -58,24 +101,38 @@ const Chatbot = () => {
         }
     };
 
+    // 4) 메시지 전송 로직
     const sendMessage = async () => {
         if (!input.trim()) return;
 
-        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // 타임스탬프 생성
+        const timestamp = new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
 
-        const newMessages: Message[] = [
-            ...messages,
-            { role: "user", content: input, timestamp },
-        ];
-
+        // 사용자 메시지 추가
+        const newMessages = [...messages, { role: "user", content: input, timestamp }];
         setMessages(newMessages);
         setInput("");
 
+        // GPT 호출
         const botResponse = await fetchBotResponse(input);
-        setMessages([...newMessages, { role: "bot", content: botResponse, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+
+        // 봇 메시지 추가
+        setMessages([
+            ...newMessages,
+            {
+                role: "bot",
+                content: botResponse,
+                timestamp: new Date().toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                }),
+            },
+        ]);
     };
 
-    // 로그인 상태가 아닌 경우 버튼과 창을 렌더링하지 않음
+    // 인증되지 않은 경우
     if (!isAuthenticated) {
         return null;
     }
@@ -90,13 +147,8 @@ const Chatbot = () => {
             {/* 챗봇 창 및 배경 */}
             {isOpen && (
                 <>
-                    {/* 반투명 배경 */}
-                    <div
-                        className="chatbot-overlay"
-                        onClick={toggleChatbot} // 배경 클릭 시 창 닫힘
-                    ></div>
+                    <div className="chatbot-overlay" onClick={toggleChatbot}></div>
 
-                    {/* 챗봇 창 */}
                     <div className="chatbot-window">
                         <div className="chatbot-header">Chatbot</div>
                         <div className="chatbot-content">
