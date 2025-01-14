@@ -6,21 +6,22 @@ import {
   FilterDropdown,
   List,
 } from "@refinedev/antd";
-import { useGo, useList, useDelete } from "@refinedev/core";
+import { useGo, useList, useDelete, useMany } from "@refinedev/core";
 import { SearchOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Input, Space, Table, Popconfirm, Button } from "antd";
 import { PaginationTotal } from "../../../components/pagination-total";
 import { Text } from "../../../components/text";
+import { CustomAvatar } from "../../../components/custom-avatar"; // 아바타 컴포넌트
 import { callAIStudio } from "../../../helpers/api/aiStudioApi"; // AI API 호출 함수
 import { updateDbWithChatbot } from "../../../helpers/firebase/firestoreHelpers"; // Firestore 업데이트 함수
 import magnifyingGlass from "../../../assets/icons/magnifying-glass.svg";
 
 export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
   const go = useGo();
-  const [searchText, setSearchText] = useState(""); // 노트 검색 필터
-  const [analyzingIds, setAnalyzingIds] = useState<Record<string, boolean>>({}); // 개별 로딩 상태 관리
+  const [searchText, setSearchText] = useState(""); 
+  const [analyzingIds, setAnalyzingIds] = useState<Record<string, boolean>>({});
 
-  // Fetch interaction data
+  // 1) interaction 목록 불러오기
   const { data: interactionData, isLoading, refetch } = useList({
     resource: "interaction",
     queryOptions: {
@@ -30,36 +31,69 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
     },
   });
 
+  // 2) interaction에서 contact_id들을 모아서 useMany로 contact 정보 불러오기
+  const contactIds = useMemo(() => {
+    const allIds = (interactionData?.data || [])
+      .map((item) => item.contact_id)
+      .filter(Boolean); // undefined/null 제거
+    return Array.from(new Set(allIds)); // 중복 제거
+  }, [interactionData?.data]);
+
+  // contact DB에서 가져오기
+  const { data: contactsData, isLoading: isContactsLoading } = useMany({
+    resource: "contact",
+    ids: contactIds,
+  });
+
+  // 3) contact_id -> { name, avatarUrl } 매핑용 객체 만들기
+  const contactMap = useMemo(() => {
+    const map: Record<string, { name: string; avatarUrl?: string }> = {};
+    if (contactsData?.data) {
+      contactsData.data.forEach((contact) => {
+        map[contact.id] = {
+          name: contact.name,
+          avatarUrl: contact.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${contact.name}`, // contact 컬렉션에 avatarUrl 필드가 있다고 가정
+        };
+      });
+    }
+    return map;
+  }, [contactsData?.data]);
+
+  // 4) interaction 배열을 가공해서 테이블에 뿌릴 데이터 만들기
   const interactions = useMemo(() => {
     return (
-      (interactionData?.data || []).map((interaction) => ({
-        ...interaction,
-        Classification: interaction.classification?.Classification || "N/A", // Classification 필드
-        Sentiment_score:
-          interaction.classification?.Sentiment_score ?? "N/A", // Sentiment_score 필드
-        notes: interaction.notes || "No notes available", // 노트 필드
-        date: interaction.date || "Unknown date", // 날짜 필드
-      })) || []
+      (interactionData?.data || []).map((interaction) => {
+        const contactInfo = contactMap[interaction.contact_id] || {};
+        return {
+          ...interaction,
+          contactName: contactInfo.name ?? "No contact name",
+          contactAvatar: contactInfo.avatarUrl ?? "",
+          Classification: interaction.classification?.Classification || "N/A",
+          Sentiment_score: interaction.classification?.Sentiment_score ?? "N/A",
+          notes: interaction.notes || "No notes available",
+          date: interaction.date || "Unknown date",
+        };
+      }) || []
     );
-  }, [interactionData]);
+  }, [interactionData, contactMap]);
 
   // 노트 검색 필터링
   const filteredInteractions = useMemo(() => {
     return interactions.filter((interaction) =>
-      interaction.notes.toLowerCase().includes(searchText.toLowerCase())
+      interaction.notes?.toLowerCase().includes(searchText.toLowerCase())
     );
   }, [interactions, searchText]);
 
   const { mutate: deleteInteraction } = useDelete();
 
   // Interaction 삭제 핸들러
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     deleteInteraction(
       { resource: "interaction", id },
       {
         onSuccess: () => {
           console.log(`Interaction with id ${id} deleted successfully.`);
-          refetch(); // 삭제 후 데이터 갱신
+          refetch();
         },
         onError: (error) => {
           console.error("Failed to delete interaction:", error);
@@ -69,12 +103,11 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
   };
 
   // Analyze 버튼 클릭 핸들러
-  const handleAnalyze = async (interaction) => {
+  const handleAnalyze = async (interaction: any) => {
     const id = interaction.id;
-    setAnalyzingIds((prev) => ({ ...prev, [id]: true })); // 특정 항목 로딩 상태 설정
+    setAnalyzingIds((prev) => ({ ...prev, [id]: true }));
 
     try {
-      // AI Studio API 호출
       const analysisResult = await callAIStudio(
         [{ id, notes: interaction.notes }],
         "Review Classification"
@@ -89,13 +122,11 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
       });
 
       console.log(`Interaction ${id} analyzed successfully!`);
-
-      // 데이터 갱신
       refetch();
     } catch (error) {
       console.error(`Error analyzing interaction ${id}:`, error);
     } finally {
-      setAnalyzingIds((prev) => ({ ...prev, [id]: false })); // 특정 항목 로딩 상태 해제
+      setAnalyzingIds((prev) => ({ ...prev, [id]: false }));
     }
   };
 
@@ -125,14 +156,30 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
           ),
         }}
         rowKey="id"
-        loading={isLoading}
+        loading={isLoading || isContactsLoading}
       >
         {/* 날짜 정렬 */}
         <Table.Column
           dataIndex="date"
           title="Date"
           render={(text) => <Text>{text}</Text>}
-          sorter={(a, b) => new Date(a.date) - new Date(b.date)}
+          sorter={(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()}
+        />
+
+        {/* Contact Name + Avatar */}
+        <Table.Column
+          title="Contact"
+          dataIndex="contactName"
+          render={(_, record) => (
+            <Space>
+              <CustomAvatar
+                shape="square"
+                name={record.contactName}
+                src={record.contactAvatar}
+              />
+              <Text>{record.contactName}</Text>
+            </Space>
+          )}
         />
 
         {/* 노트 검색 */}
@@ -198,8 +245,7 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
                 <img
                   src={magnifyingGlass}
                   alt="Analyze"
-                  style={{ width: "16px", height: "16px", display: "block"
-                  }}
+                  style={{ width: "16px", height: "16px", display: "block" }}
                 />
               </Button>
 
@@ -222,7 +268,9 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
                     justifyContent: "center",
                   }}
                 >
-                  <DeleteOutlined style={{width: "16px", height: "16px", color: "red" }} />
+                  <DeleteOutlined
+                    style={{ width: "16px", height: "16px", color: "red" }}
+                  />
                 </button>
               </Popconfirm>
             </Space>
