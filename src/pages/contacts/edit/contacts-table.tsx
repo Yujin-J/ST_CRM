@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useList } from "@refinedev/core";
 import { Button, Card, Space, Table } from "antd";
 import { Text } from "../../../components/text";
@@ -10,11 +10,10 @@ export const InteractionTable = () => {
   const params = useParams();
   const [dateFilter, setDateFilter] = useState("");
   const [emotionFilter, setEmotionFilter] = useState("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false); // Analyze 버튼 상태 관리
-  const [interactions, setInteractions] = useState([]); // 데이터를 상태로 관리
+  const [analyzingIds, setAnalyzingIds] = useState<Record<string, boolean>>({}); // 개별 로딩 상태 관리
 
   // Fetch interaction data from Firebase
-  const { data, isLoading } = useList({
+  const { data, isLoading, refetch } = useList({
     resource: "interaction",
     filters: [
       {
@@ -23,67 +22,56 @@ export const InteractionTable = () => {
         value: params?.id,
       },
     ],
-    queryOptions: {
-      onSuccess: (fetchedData) => {
-        // 초기 데이터 설정
-        setInteractions(
-          (fetchedData?.data || []).map((interaction) => ({
-            ...interaction,
-            Classification: interaction.classification?.Classfication || "N/A",
-            Sentiment_score: interaction.classification?.Sentiment_score ?? "N/A",
-          }))
-        );
-      },
-    },
   });
 
-  console.log("Interactions:", interactions);
+  // 데이터를 Interaction[] 형태로 매핑
+  const interactions = useMemo(() => {
+    return (
+      (data?.data || []).map((interaction) => ({
+        ...interaction,
+        Classification: interaction.classification?.Classification || "N/A",
+        Sentiment_score: interaction.classification?.Sentiment_score ?? "N/A",
+      })) || []
+    );
+  }, [data]);
 
   // 필터링 로직
   const filteredInteractions = useMemo(() => {
     return interactions.filter(
       (interaction) =>
         interaction.date.toLowerCase().includes(dateFilter.toLowerCase()) &&
-        interaction.emotion.toLowerCase().includes(emotionFilter.toLowerCase())
+        interaction.Classification.toLowerCase().includes(emotionFilter.toLowerCase())
     );
   }, [interactions, dateFilter, emotionFilter]);
 
   // Analyze 버튼 클릭 핸들러
   const handleAnalyze = async (interaction) => {
-    setIsAnalyzing(true); // 분석 상태 시작
+    const id = interaction.id;
+    setAnalyzingIds((prev) => ({ ...prev, [id]: true })); // 특정 항목 로딩 상태 설정
+
     try {
       // AI Studio API 호출
       const analysisResult = await callAIStudio(
-        [{ id: interaction.id, notes: interaction.notes }],
+        [{ id, notes: interaction.notes }],
         "Review Classification"
       );
 
       console.log("Analysis Result:", analysisResult);
 
       // Firestore에 분석 결과 업데이트
-      await updateDbWithChatbot(interaction.id, "Review Classification", "interaction", {
-        Classfication: analysisResult[0].Classification,
+      await updateDbWithChatbot(id, "Review Classification", "interaction", {
+        Classification: analysisResult[0].Classification,
         Sentiment_score: analysisResult[0].Sentiment_score,
       });
 
-      // 상태 업데이트로 UI 갱신
-      setInteractions((prev) =>
-        prev.map((item) =>
-          item.id === interaction.id
-            ? {
-                ...item,
-                Classification: analysisResult[0].Classification,
-                Sentiment_score: analysisResult[0].Sentiment_score,
-              }
-            : item
-        )
-      );
+      console.log(`Interaction ${id} analyzed successfully!`);
 
-      console.log(`Interaction ${interaction.id} analyzed successfully!`);
+      // 데이터 새로고침
+      await refetch();
     } catch (error) {
-      console.error(`Error analyzing interaction ${interaction.id}:`, error);
+      console.error(`Error analyzing interaction ${id}:`, error);
     } finally {
-      setIsAnalyzing(false); // 분석 상태 종료
+      setAnalyzingIds((prev) => ({ ...prev, [id]: false })); // 특정 항목 로딩 상태 해제
     }
   };
 
@@ -102,7 +90,7 @@ export const InteractionTable = () => {
       <Table
         dataSource={filteredInteractions}
         rowKey="id"
-        loading={isLoading || isAnalyzing} // 로딩 상태 추가
+        loading={isLoading} // 전체 테이블 로딩 상태
         pagination={{ showSizeChanger: false }}
       >
         <Table.Column
@@ -145,7 +133,7 @@ export const InteractionTable = () => {
               <Button>Edit</Button>
               <Button
                 onClick={() => handleAnalyze(record)} // Analyze 버튼 클릭 핸들러 연결
-                loading={isAnalyzing}
+                loading={!!analyzingIds[id]} // 특정 버튼 로딩 상태
               >
                 Analyze
               </Button>

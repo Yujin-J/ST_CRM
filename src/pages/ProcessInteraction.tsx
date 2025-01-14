@@ -1,56 +1,152 @@
-import React, { useEffect, useState } from "react";
-import {
-  getInteractions,
-  updateDbWithChatbot,
-} from "../helpers/firebase/firestoreHelpers"; // Firestore 헬퍼 함수 가져오기
-import { callAIStudio } from "../helpers/api/aiStudioApi"; // AI Studio API 호출 함수 가져오기
+import React, { useMemo, useState } from "react";
+import { useList } from "@refinedev/core";
+import { Button, Card, Space, Table, Input } from "antd";
+import { Text } from "../components/text/index";
+import { useParams } from "react-router";
+import { callAIStudio } from "../helpers/api/aiStudioApi";
+import { updateDbWithChatbot } from "../helpers/firebase/firestoreHelpers";
 
-const ProcessInteraction: React.FC = () => {
-  const [isProcessing, setIsProcessing] = useState(false); // 로딩 상태 관리
+// 데이터 타입 정의
+interface Interaction {
+  id: string;
+  date: string;
+  notes: string;
+  Classification: string;
+  Sentiment_score: number | string;
+}
 
-  useEffect(() => {
-    const processInteractions = async () => {
-      setIsProcessing(true); // 로딩 상태 시작
-      try {
-        // Firestore에서 interaction 데이터 가져오기
-        const interactions = await getInteractions();
+export const InteractionTable = () => {
+  const params = useParams();
+  const [dateFilter, setDateFilter] = useState<string>(""); // 날짜 필터
+  const [emotionFilter, setEmotionFilter] = useState<string>(""); // 감정 필터
+  const [analyzingIds, setAnalyzingIds] = useState<Record<string, boolean>>({}); // Analyze 로딩 상태
 
-        // 모든 interaction 데이터를 통합
-        const notes = interactions.map((interaction) => ({
-          id: interaction.id, // 각 interaction의 ID
-          notes: interaction.notes, // 분류할 텍스트
-        }));
+  // Firebase 데이터 가져오기
+  const { data, isLoading, refetch } = useList({
+    resource: "interaction",
+    filters: [
+      {
+        field: "contact_id",
+        operator: "eq",
+        value: params?.id,
+      },
+    ],
+  });
 
-        console.log(notes);
+  // 데이터 가공
+  const interactions = useMemo<Interaction[]>(() => {
+    return (
+      (data?.data || []).map((interaction: any) => ({
+        id: interaction.id,
+        date: interaction.date || "Unknown date",
+        notes: interaction.notes || "No notes available",
+        Classification: interaction.classification?.Classification || "N/A",
+        Sentiment_score: interaction.classification?.Sentiment_score ?? "N/A",
+      })) || []
+    );
+  }, [data]);
 
-        // AI Studio API 호출하여 통합된 데이터를 처리
-        const classifications = await callAIStudio(notes, "Review Classification");
+  // 필터링된 데이터
+  const filteredInteractions = useMemo(() => {
+    return interactions.filter(
+      (interaction) =>
+        interaction.date.toLowerCase().includes(dateFilter.toLowerCase()) &&
+        interaction.Classification.toLowerCase().includes(emotionFilter.toLowerCase())
+    );
+  }, [interactions, dateFilter, emotionFilter]);
 
-        // Firestore에 각 결과 업데이트
-        for (const { id, classification } of classifications) {
-          await updateDbWithChatbot(id, "Review Classification", "interaction", classification);
-        }
+  // Analyze 버튼 클릭 핸들러
+  const handleAnalyze = async (interaction: Interaction) => {
+    const id = interaction.id;
+    setAnalyzingIds((prev) => ({ ...prev, [id]: true })); // 특정 항목 로딩 상태 설정
 
-        console.log("Processing completed successfully");
-      } catch (error) {
-        console.error("Error processing interactions:", error);
-      } finally {
-        setIsProcessing(false); // 로딩 상태 종료
-      }
-    };
+    try {
+      const analysisResult = await callAIStudio(
+        [{ id, notes: interaction.notes }],
+        "Review Classification"
+      );
 
-    void processInteractions(); // 비동기 함수 호출 (경고 방지)
-  }, []);
+      await updateDbWithChatbot(id, "Review Classification", "interaction", {
+        Classification: analysisResult[0].Classification,
+        Sentiment_score: analysisResult[0].Sentiment_score,
+      });
+
+      // 데이터 새로고침
+      await refetch();
+    } catch (error) {
+      console.error(`Error analyzing interaction ${id}:`, error);
+    } finally {
+      setAnalyzingIds((prev) => ({ ...prev, [id]: false })); // 로딩 상태 해제
+    }
+  };
 
   return (
-    <div>
-      {isProcessing ? (
-        <p>Processing interactions, please wait...</p> // 로딩 중 메시지
-      ) : (
-        <p>Processing complete. Check Firestore for results.</p> // 완료 메시지
-      )}
-    </div>
+    <Card
+      title="Interactions"
+      headStyle={{ borderBottom: "1px solid #D9D9D9", marginBottom: "1px" }}
+      bodyStyle={{ padding: 0 }}
+      extra={
+        <>
+          <Text className="tertiary">Total interactions: </Text>
+          <Text strong>{filteredInteractions.length}</Text>
+        </>
+      }
+    >
+      <Table
+        dataSource={filteredInteractions}
+        rowKey="id"
+        loading={isLoading}
+        pagination={{ showSizeChanger: false }}
+      >
+        <Table.Column
+          title="Date"
+          dataIndex="date"
+          render={(date) => <Text>{date}</Text>}
+          filterDropdown={() => (
+            <Input
+              placeholder="Search Date"
+              onChange={(e) => setDateFilter(e.target.value)}
+            />
+          )}
+        />
+        <Table.Column
+          title="Emotion"
+          dataIndex="Classification"
+          render={(Classification) => <Text>{Classification}</Text>}
+          filterDropdown={() => (
+            <Input
+              placeholder="Search Emotion"
+              onChange={(e) => setEmotionFilter(e.target.value)}
+            />
+          )}
+        />
+        <Table.Column
+          title="Notes"
+          dataIndex="notes"
+          render={(notes) => <Text>{notes}</Text>}
+        />
+        <Table.Column
+          title="Sentiment Score"
+          dataIndex="Sentiment_score"
+          render={(Sentiment_score) => <Text>{Sentiment_score}</Text>}
+        />
+        <Table.Column
+          title="Actions"
+          dataIndex="id"
+          render={(id, record) => (
+            <Space>
+              <Button>Edit</Button>
+              <Button
+                onClick={() => handleAnalyze(record)}
+                loading={!!analyzingIds[id]}
+              >
+                Analyze
+              </Button>
+              <Button danger>Delete</Button>
+            </Space>
+          )}
+        />
+      </Table>
+    </Card>
   );
 };
-
-export default ProcessInteraction;

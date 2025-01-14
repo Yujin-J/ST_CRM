@@ -26,7 +26,7 @@ import {
 } from "../pages/contacts";
 
 // ProcessInteraction 컴포넌트 import
-import ProcessInteraction from "../pages/ProcessInteraction";
+import { InteractionTable } from "../pages/ProcessInteraction";
 
 export const AppRoutes = () => {
   return (
@@ -72,7 +72,7 @@ export const AppRoutes = () => {
         </Route>
 
         {/* ProcessInteraction 라우트 추가 */}
-        <Route path="/process-interaction" element={<ProcessInteraction />} />
+        <Route path="/process-interaction" element={<InteractionTable />} />
       </Route>
 
       <Route

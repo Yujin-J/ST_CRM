@@ -30,7 +30,7 @@ async function loadPromptFromCSV() {
 export const callAIStudio = async (
     inputs: Array<{ id: string; notes: string }>,
     intent: string
-  ): Promise<Array<{ id: string; Classfication: string; Sentiment_score: number | null }>> => {
+  ): Promise<Array<{ id: string; Classification: string; Sentiment_score: number | null }>> => {
     if (!promptData) {
       await loadPromptFromCSV();
     }
