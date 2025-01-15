@@ -1,4 +1,4 @@
-import { Bar, type BarConfig } from "@ant-design/plots";
+import { Pie, type PieConfig } from "@ant-design/plots";
 import { Card, Typography } from "antd";
 import { SmileOutlined } from "@ant-design/icons";
 import React, { useState, useEffect } from "react";
@@ -28,10 +28,12 @@ export const OverallSentiment = () => {
           { Positive: 0, Neutral: 0, Negative: 0 }
         );
 
+        const total = sentimentCounts.Positive + sentimentCounts.Neutral + sentimentCounts.Negative;
+
         setOverallSentiment([
-          { type: "Positive", value: sentimentCounts.Positive },
-          { type: "Neutral", value: sentimentCounts.Neutral },
-          { type: "Negative", value: sentimentCounts.Negative },
+          { type: "Positive", value: (sentimentCounts.Positive / total) * 100 },
+          { type: "Neutral", value: (sentimentCounts.Neutral / total) * 100 },
+          { type: "Negative", value: (sentimentCounts.Negative / total) * 100 },
         ]);
       } catch (error) {
         console.error("Error fetching overall sentiment:", error);
@@ -41,13 +43,25 @@ export const OverallSentiment = () => {
     fetchOverallSentiment();
   }, []);
 
-  const overallSentimentConfig: BarConfig = {
+  const overallSentimentConfig: PieConfig = {
     data: overallSentiment,
-    xField: "value",
-    yField: "type",
+    angleField: "value",
+    colorField: "type",
+    radius: 0.9,
+    label: {
+      type: "inner",
+      content: ({ percent }) => `${Math.round(percent * 100)}%`,
+      style: { fontSize: 14, fontWeight: "bold", textAlign: "center", lineHeight: "1" },
+      autoRotate: false,
+    },
     color: ({ type }) =>
       type === "Positive" ? "#52C41A" : type === "Neutral" ? "#FAAD14" : "#F5222D",
-    barWidthRatio: 0.8,
+    tooltip: {
+      formatter: (data) => ({
+        name: data.type,
+        value: `${Math.round(data.value)}%`,
+      }),
+    },
   };
 
   return (
@@ -59,7 +73,7 @@ export const OverallSentiment = () => {
         </div>
       }
     >
-      <Bar {...overallSentimentConfig} height={200} />
+      <Pie {...overallSentimentConfig} height={200} />
     </Card>
   );
 };
