@@ -12,9 +12,19 @@ type Message = {
 
 const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<Message[]>([
+        {
+            role: "bot",
+            content: "안녕하세요. 저는 CRM 시스템 데이터베이스를 동작하는 AI 챗봇 비서입니다. 어떻게 도와드릴까요?",
+            timestamp: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+            }),
+        },
+    ]);
     const [input, setInput] = useState("");
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(false); // 🔹 로딩 상태 추가
 
     // 🔹 DB 전체 내용을 문자열로 저장할 상태 (여기서는 interaction만)
     const [dbData, setDbData] = useState<string>("");
@@ -250,6 +260,7 @@ content: `
         const newMessages = [...messages, { role: "user", content: input, timestamp }];
         setMessages(newMessages);
         setInput("");
+        setIsLoading(true); // 🔹 로딩 상태 활성화
 
         // GPT 호출
         const botResponse = await fetchBotResponse(input);
@@ -266,6 +277,7 @@ content: `
                 }),
             },
         ]);
+        setIsLoading(false); // 🔹 로딩 상태 비활성화
     };
 
     // 인증되지 않은 경우
@@ -275,18 +287,16 @@ content: `
 
     return (
         <div>
-            {/* 챗봇 버튼 */}
             <button onClick={toggleChatbot} className="chatbot-button">
                 💬
             </button>
 
-            {/* 챗봇 창 및 배경 */}
             {isOpen && (
                 <>
                     <div className="chatbot-overlay" onClick={toggleChatbot}></div>
 
                     <div className="chatbot-window">
-                        <div className="chatbot-header">Chatbot</div>
+                        <div className="chatbot-header">CRM AI Chatbot</div>
                         <div className="chatbot-content">
                             {messages.map((message, index) => (
                                 <div
@@ -299,17 +309,27 @@ content: `
                                     <span className="timestamp">{message.timestamp}</span>
                                 </div>
                             ))}
+                            {isLoading && (
+                                <div className="chatbot-message bot">
+                                    Responding...
+                                </div>
+                            )}
                         </div>
                         <div className="chatbot-input-container">
                             <input
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                                onKeyPress={(e) => e.key === "Enter" && !isLoading && sendMessage()}
                                 className="chatbot-input"
                                 placeholder="Enter your message..."
+                                disabled={isLoading} // 🔹 로딩 중에는 입력 비활성화
                             />
-                            <button onClick={sendMessage} className="chatbot-send-button">
-                                Send
+                            <button
+                                onClick={sendMessage}
+                                className="chatbot-send-button"
+                                disabled={isLoading} // 🔹 로딩 중에는 버튼 비활성화
+                            >
+                                {isLoading ? "Responding..." : "Send"}
                             </button>
                         </div>
                     </div>
