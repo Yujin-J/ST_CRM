@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Col, Row } from "antd";
 import { DashboardTotalCountCard } from "./components/total-count-card";
-import { CalendarUpcomingEvents } from "./components/upcoming-events";
-import { DashboardDealsChart } from "./components/deal-chart";
-import { DashboardLatestActivities } from "./components/latest-activity";
+import { OverallSentiment } from "./components/overall-sentiment";
+import { SentimentAnalysisDashboard } from "./components/sentiment-trends";
+import { DashboardRecentReviews } from "./components/recent-review";
 import { fetchCollectionCount, fetchNewUsersCount } from "../../helpers/firebase/firebaseService"; // Firestore 데이터를 가져오는 함수
 
 export const DashboardPage = () => {
@@ -80,16 +80,16 @@ export const DashboardPage = () => {
 
       <Row gutter={[32, 32]} style={{ marginTop: "32px" }}>
         <Col xs={24} sm={24} xl={8} style={{ height: "460px" }}>
-          <CalendarUpcomingEvents />
+          <OverallSentiment />
         </Col>
         <Col xs={24} sm={24} xl={16} style={{ height: "460px" }}>
-          <DashboardDealsChart />
+          <SentimentAnalysisDashboard />
         </Col>
       </Row>
 
       <Row gutter={[32, 32]} style={{ marginTop: "32px" }}>
         <Col xs={24}>
-          <DashboardLatestActivities />
+          <DashboardRecentReviews />
         </Col>
       </Row>
     </div>
