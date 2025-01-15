@@ -15,6 +15,7 @@ import { CustomAvatar } from "../../../components/custom-avatar"; // 아바타 �
 import { callAIStudio } from "../../../helpers/api/aiStudioApi"; // AI API 호출 함수
 import { updateDbWithChatbot } from "../../../helpers/firebase/firestoreHelpers"; // Firestore 업데이트 함수
 import magnifyingGlass from "../../../assets/icons/magnifying-glass.svg";
+import { message } from "antd";
 
 export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
   const go = useGo();
@@ -93,6 +94,8 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
       {
         onSuccess: () => {
           console.log(`Interaction with id ${id} deleted successfully.`);
+          message.success("Interaction has been deleted successfully!");
+          
           refetch();
         },
         onError: (error) => {

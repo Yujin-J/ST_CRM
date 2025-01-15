@@ -15,6 +15,7 @@ import { Text } from "../../../components/text";
 import { useDelete } from "@refinedev/core";
 import { Popconfirm } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
+import { message } from "antd";
 
 export const ContactListPage = ({ children }: React.PropsWithChildren) => {
   const go = useGo();
@@ -47,6 +48,7 @@ export const ContactListPage = ({ children }: React.PropsWithChildren) => {
       {
         onSuccess: () => {
           console.log(`Contact with id ${id} deleted successfully.`);
+          message.success("Contact has been deleted successfully!");
         },
         onError: (error) => {
           console.error("Failed to delete contact:", error);
@@ -125,7 +127,7 @@ export const ContactListPage = ({ children }: React.PropsWithChildren) => {
               <Space>
                 <EditButton hideText size="small" recordItemId={value} />
                 <Popconfirm
-                  title="Are you sure you want to delete this customer?"
+                  title="Are you sure you want to delete this contact?"
                   onConfirm={() => handleDelete(value)}
                   okText="Yes"
                   cancelText="No"

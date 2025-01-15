@@ -17,6 +17,7 @@ import { useDelete } from "@refinedev/core"
 import { firestoreDataProvider } from "../../../helpers/firebase/firebaseConfig"
 import { Popconfirm } from "antd";
 import { DeleteOutlined } from "@ant-design/icons"
+import { message } from "antd";
 
 export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
   const go = useGo();
@@ -49,8 +50,12 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
     deleteCustomer(
       { resource: "customer", id:id },
       {
-        onSuccess: () => console.log(`Customer ${id} deleted successfully.`),
-        onError: (error) => console.error("Delete failed:", error),
+        onSuccess: () => {
+          message.success("Customer has been deleted successfully!");
+        },
+        onError: (error) => {
+          console.error("Delete failed:", error);
+        },
       }
     );
   };
