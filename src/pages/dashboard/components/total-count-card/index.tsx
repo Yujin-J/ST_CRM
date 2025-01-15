@@ -24,7 +24,7 @@ export const DashboardTotalCountCard = ({
     appendPadding: [1, 0, 0, 0],
     padding: 0,
     syncViewPadding: true,
-    data: variants[resource].data,
+    data: [], // 하드코딩된 데이터 제거
     autoFit: true,
     tooltip: false,
     animation: false,
@@ -162,28 +162,7 @@ const variants: {
       </IconWrapper>
     ),
     title: "Number of customers",
-    data: [
-      {
-        index: "1",
-        value: 3500,
-      },
-      {
-        index: "2",
-        value: 2750,
-      },
-      {
-        index: "3",
-        value: 5000,
-      },
-      {
-        index: "4",
-        value: 4250,
-      },
-      {
-        index: "5",
-        value: 5000,
-      },
-    ],
+    data: [], // 데이터 제거
   },
   contacts: {
     primaryColor: "#52C41A",
@@ -199,32 +178,7 @@ const variants: {
       </IconWrapper>
     ),
     title: "Number of contacts",
-    data: [
-      {
-        index: "1",
-        value: 10000,
-      },
-      {
-        index: "2",
-        value: 19500,
-      },
-      {
-        index: "3",
-        value: 13000,
-      },
-      {
-        index: "4",
-        value: 17000,
-      },
-      {
-        index: "5",
-        value: 13000,
-      },
-      {
-        index: "6",
-        value: 20000,
-      },
-    ],
+    data: [], // 데이터 제거
   },
   interactions: {
     primaryColor: "#FA541C",
@@ -240,42 +194,9 @@ const variants: {
       </IconWrapper>
     ),
     title: "Number of  interactions",
-    data: [
-      {
-        index: "1",
-        value: 1000,
-      },
-      {
-        index: "2",
-        value: 1300,
-      },
-      {
-        index: "3",
-        value: 1200,
-      },
-      {
-        index: "4",
-        value: 2000,
-      },
-      {
-        index: "5",
-        value: 800,
-      },
-      {
-        index: "6",
-        value: 1700,
-      },
-      {
-        index: "7",
-        value: 1400,
-      },
-      {
-        index: "8",
-        value: 1800,
-      },
-    ],
+    data: [], // 데이터 제거
   },
-  newUsers: { // 신규 사용자 데이터 추가
+  newUsers: {
     primaryColor: "#FF9800",
     secondaryColor: "#FFE0B2",
     icon: (
@@ -289,10 +210,6 @@ const variants: {
       </IconWrapper>
     ),
     title: "New Customers (Last 7 Days)",
-    data: [
-      { index: "1", value: 50 },
-      { index: "2", value: 75 },
-      { index: "3", value: 90 },
-    ], // 데이터는 차트용으로 활용
+    data: [], // 데이터 제거
   },
 };
