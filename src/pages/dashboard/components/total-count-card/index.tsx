@@ -1,11 +1,11 @@
 import React from "react";
-
+import { UserAddOutlined } from "@ant-design/icons";
 import { AuditOutlined, ShopOutlined, TeamOutlined } from "@ant-design/icons";
 import { Area, type AreaConfig } from "@ant-design/plots";
 import { Card, Skeleton } from "antd";
 import { Text } from "../../../../components/text";
 
-type Type = "customers" | "contacts" | "interactions";
+type Type = "customers" | "contacts" | "interactions" | "newUsers";
 
 type Props = {
   resource: Type;
@@ -274,5 +274,25 @@ const variants: {
         value: 1800,
       },
     ],
+  },
+  newUsers: { // 신규 사용자 데이터 추가
+    primaryColor: "#FF9800",
+    secondaryColor: "#FFE0B2",
+    icon: (
+      <IconWrapper color="#FFF3E0">
+        <UserAddOutlined
+          className="md"
+          style={{
+            color: "#FF9800",
+          }}
+        />
+      </IconWrapper>
+    ),
+    title: "New Customers (Last 7 Days)",
+    data: [
+      { index: "1", value: 50 },
+      { index: "2", value: 75 },
+      { index: "3", value: 90 },
+    ], // 데이터는 차트용으로 활용
   },
 };

@@ -3,6 +3,7 @@ import { Form, Input, Modal, Select, DatePicker } from "antd";
 import { useState } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
+import { message } from "antd";
 
 export const InteractionCreateModal = () => {
   const go = useGo();
@@ -51,6 +52,8 @@ export const InteractionCreateModal = () => {
       {
         onSuccess: () => {
           console.log("Interaction created successfully:", payload);
+          // 성공 메시지 표시
+          message.success("Interaction has been added successfully!");
           goToInteractionListPage(); // 생성 후 이동
         },
         onError: (error) => {

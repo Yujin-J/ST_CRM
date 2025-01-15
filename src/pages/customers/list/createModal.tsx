@@ -2,6 +2,7 @@ import { useGo, useList, useCreate } from "@refinedev/core";
 import { Form, Input, Modal, Select, InputNumber } from "antd";
 import { useState } from "react";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
+import { message } from "antd";
 
 const companySizeOptions = [
   { label: "Small", value: "Small" },
@@ -44,7 +45,10 @@ export const CustomerCreateModal = () => {
   const onFinish = (values: any) => {
     const sanitizedValues = Object.fromEntries(
       Object.entries(values).map(([keys, value]) => [keys, value ?? ""])
-    );
+    );  
+
+    // Firestore의 Timestamp 형식으로 저장
+    sanitizedValues.created_at = new Date();
 
     createCustomer(
       {
@@ -54,6 +58,9 @@ export const CustomerCreateModal = () => {
       {
         onSuccess: () => {
           console.log("Customer added successfully:", sanitizedValues);
+          // 성공 메시지 표시
+          message.success("Customer has been added successfully!");
+
           goToListPage(); // 모달 닫고 고객 목록으로 이동
         },
         onError: (error) => {

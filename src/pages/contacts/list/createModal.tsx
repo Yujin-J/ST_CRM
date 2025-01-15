@@ -2,6 +2,7 @@ import { useGo, useList, useCreate } from "@refinedev/core";
 import { Form, Input, Modal, Select, InputNumber } from "antd";
 import { useState } from "react";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
+import { message } from "antd";
 
 const companySizeOptions = [
   { label: "Small", value: "Small" },
@@ -58,6 +59,9 @@ export const ContactCreateModal = () => {
       {
         onSuccess: () => {
           console.log("Contact added successfully:", sanitizedValues);
+          // 성공 메시지 표시
+          message.success("Contact has been added successfully!");
+
           goToListPage(); // 모달 닫고 고객 목록으로 이동
         },
         onError: (error) => {
