@@ -63,10 +63,10 @@ export const DashboardPage = () => {
   </Row>
 
   <Row gutter={[32, 32]} style={{ marginTop: "32px" }}>
-    <Col xs={24} sm={24} xl={8} style={{ height: "460px" }}>
+    <Col xs={24} sm={24} xl={8} style={{ height: "430px" }}>
       <OverallSentiment />
     </Col>
-    <Col xs={24} sm={24} xl={16} style={{ height: "460px" }}>
+    <Col xs={24} sm={24} xl={16} style={{ height: "430px" }}>
       <SentimentAnalysisDashboard />
     </Col>
   </Row>

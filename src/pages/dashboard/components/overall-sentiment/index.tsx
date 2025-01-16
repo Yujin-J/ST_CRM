@@ -73,7 +73,7 @@ export const OverallSentiment = () => {
         </div>
       }
     >
-      <Pie {...overallSentimentConfig} height={200} />
+      <Pie {...overallSentimentConfig} height={325} />
     </Card>
   );
 };
