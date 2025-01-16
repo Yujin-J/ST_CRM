@@ -6,15 +6,15 @@ import {
   FilterDropdown,
   List,
 } from "@refinedev/antd";
-import { useGo, useList} from "@refinedev/core";
+import { useGo, useList } from "@refinedev/core";
 import { SearchOutlined } from "@ant-design/icons";
 import { Input, Space, Table } from "antd";
 import { PaginationTotal } from "../../../components/pagination-total";
 import { CustomAvatar } from "../../../components/custom-avatar";
 import { Text } from "../../../components/text";
 import { currencyNumber } from "../../../utilities/currency-number";
-import { useDelete } from "@refinedev/core"
-import { firestoreDataProvider } from "../../../helpers/firebase/firebaseConfig"
+import { useDelete } from "@refinedev/core";
+import { firestoreDataProvider } from "../../../helpers/firebase/firebaseConfig";
 import { Popconfirm } from "antd";
 import { DeleteOutlined } from "@ant-design/icons"
 import { message } from "antd";
@@ -35,7 +35,9 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
 
   // user 데이터를 Map 형태로 변환 (id를 키로 사용)
   const userMap = users.reduce((acc, user) => {
-    acc[user.id] = user;
+    if (user?.id) {
+      acc[user.id] = user;
+    }
     return acc;
   }, {});
 
@@ -44,11 +46,11 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
     customer.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const {mutate: deleteCustomer } = useDelete();
+  const { mutate: deleteCustomer } = useDelete();
 
   const handleDelete = (id) => {
     deleteCustomer(
-      { resource: "customer", id:id },
+      { resource: "customer", id: id },
       {
         onSuccess: () => {
           message.success("Customer has been deleted successfully!");
@@ -66,7 +68,9 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
         breadcrumb={false}
         headerButtons={() => (
           <CreateButton
-            onClick={() => go({ to: { resource: "customers", action: "create" } })}
+            onClick={() =>
+              go({ to: { resource: "customers", action: "create" } })
+            }
           />
         )}
       >

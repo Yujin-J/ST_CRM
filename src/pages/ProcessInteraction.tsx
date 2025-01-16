@@ -51,7 +51,9 @@ export const InteractionTable = () => {
     return interactions.filter(
       (interaction) =>
         interaction.date.toLowerCase().includes(dateFilter.toLowerCase()) &&
-        interaction.Classification.toLowerCase().includes(emotionFilter.toLowerCase())
+        interaction.Classification.toLowerCase().includes(
+          emotionFilter.toLowerCase()
+        )
     );
   }, [interactions, dateFilter, emotionFilter]);
 
@@ -137,7 +139,7 @@ export const InteractionTable = () => {
             <Space>
               <Button>Edit</Button>
               <Button
-                onClick={() => handleAnalyze(record)}
+                onClick={() => handleAnalyze(record as Interaction)}
                 loading={!!analyzingIds[id]}
               >
                 Analyze

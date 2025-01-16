@@ -31,6 +31,7 @@ export const InteractionTable = () => {
         ...interaction,
         Classification: interaction.classification?.Classification || "N/A",
         Sentiment_score: interaction.classification?.Sentiment_score ?? "N/A",
+        date: interaction.date || "Unknown date",
       })) || []
     );
   }, [data]);
@@ -40,7 +41,9 @@ export const InteractionTable = () => {
     return interactions.filter(
       (interaction) =>
         interaction.date.toLowerCase().includes(dateFilter.toLowerCase()) &&
-        interaction.Classification.toLowerCase().includes(emotionFilter.toLowerCase())
+        interaction.Classification.toLowerCase().includes(
+          emotionFilter.toLowerCase()
+        )
     );
   }, [interactions, dateFilter, emotionFilter]);
 
