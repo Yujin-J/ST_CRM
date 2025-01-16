@@ -62,7 +62,7 @@ export const fetchCustomerRiskData = async () => {
 
       // 위험도 계산 로직
       let riskLevel = "Low";
-      if (daysSinceCreation > 90 || (data.totalRevenue !== undefined && data.totalRevenue < 50)) {
+      if (daysSinceCreation > 90 || (data.totalRevenue !== undefined && data.totalRevenue < 3)) {
         riskLevel = "High";
       } else if (daysSinceCreation > 60) {
         riskLevel = "Medium";
