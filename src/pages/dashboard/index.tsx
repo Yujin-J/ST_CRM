@@ -5,6 +5,7 @@ import { OverallSentiment } from "./components/overall-sentiment";
 import { SentimentAnalysisDashboard } from "./components/sentiment-trends";
 import { DashboardRecentReviews } from "./components/recent-review";
 import { fetchCollectionCount, fetchNewUsersCount } from "../../helpers/firebase/firebaseService"; // Firestore 데이터를 가져오는 함수
+import CustomerRisk from "./components/customer-risk"; // 새로 추가된 컴포넌트
 
 export const DashboardPage = () => {
   // Firestore 컬렉션 데이터 상태 관리
@@ -45,53 +46,40 @@ export const DashboardPage = () => {
   }, []);
 
   return (
-    <div className="page-container">
-      <Row gutter={[32, 32]}>
-        <Col xs={24} sm={24} xl={6}>
-          <DashboardTotalCountCard
-            resource="customers"
-            isLoading={isLoading}
-            totalCount={counts.customers}
-          />
-        </Col>
-        <Col xs={24} sm={24} xl={6}>
-          <DashboardTotalCountCard
-            resource="contacts"
-            isLoading={isLoading}
-            totalCount={counts.contacts}
-          />
-        </Col>
-        <Col xs={24} sm={24} xl={6}>
-          <DashboardTotalCountCard
-            resource="interactions"
-            isLoading={isLoading}
-            totalCount={counts.interactions}
-          />
-        </Col>
-        <Col xs={24} sm={24} xl={6}>
-          <DashboardTotalCountCard
-            resource="newUsers" // 신규 사용자 리소스 추가
-            isLoading={isLoading}
-            totalCount={counts.newUsers}
-          />
-        </Col>
-      </Row>
+<div className="page-container" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+  <Row gutter={[32, 32]}>
+    <Col xs={24} sm={24} xl={6}>
+      <DashboardTotalCountCard resource="customers" isLoading={isLoading} totalCount={counts.customers} />
+    </Col>
+    <Col xs={24} sm={24} xl={6}>
+      <DashboardTotalCountCard resource="contacts" isLoading={isLoading} totalCount={counts.contacts} />
+    </Col>
+    <Col xs={24} sm={24} xl={6}>
+      <DashboardTotalCountCard resource="interactions" isLoading={isLoading} totalCount={counts.interactions} />
+    </Col>
+    <Col xs={24} sm={24} xl={6}>
+      <DashboardTotalCountCard resource="newUsers" isLoading={isLoading} totalCount={counts.newUsers} />
+    </Col>
+  </Row>
 
+  <Row gutter={[32, 32]} style={{ marginTop: "32px" }}>
+    <Col xs={24} sm={24} xl={8} style={{ height: "460px" }}>
+      <OverallSentiment />
+    </Col>
+    <Col xs={24} sm={24} xl={16} style={{ height: "460px" }}>
+      <SentimentAnalysisDashboard />
+    </Col>
+  </Row>
 
-      <Row gutter={[32, 32]} style={{ marginTop: "32px" }}>
-        <Col xs={24} sm={24} xl={8} style={{ height: "460px" }}>
-          <OverallSentiment />
-        </Col>
-        <Col xs={24} sm={24} xl={16} style={{ height: "460px" }}>
-          <SentimentAnalysisDashboard />
-        </Col>
-      </Row>
+  <Row gutter={[32, 32]} style={{ marginTop: "32px" }}>
+    <Col xs={24} sm={24} xl={12} style={{ height: "400px" }}>
+      <CustomerRisk />
+    </Col>
+    <Col xs={24} sm={24} xl={12} style={{ height: "400px" }}>
+      <DashboardRecentReviews />
+    </Col>
+  </Row>
+</div>
 
-      <Row gutter={[32, 32]} style={{ marginTop: "32px" }}>
-        <Col xs={24}>
-          <DashboardRecentReviews />
-        </Col>
-      </Row>
-    </div>
   );
 };
