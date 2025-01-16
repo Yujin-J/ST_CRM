@@ -1,7 +1,7 @@
 import React from "react";
 import { Edit } from "@refinedev/antd";
 import { Form, Input, Select, DatePicker, message } from "antd";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate} from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
 import { useOne, useUpdate, useList } from "@refinedev/core";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
@@ -19,6 +19,7 @@ export const InteractionEdit = () => {
   const [form] = Form.useForm();
   const { id } = useParams<{ id: string }>();
   const [messageApi, contextHolder] = message.useMessage();
+  const navigate = useNavigate();
 
   // 1) 수정할 interaction 가져오기
   const {
@@ -66,7 +67,8 @@ export const InteractionEdit = () => {
         },
         {
           onSuccess: () => {
-            messageApi.success("Interaction updated successfully");
+            message.success("Interaction updated successfully");
+            navigate(-1); // 이전 페이지로 이동
           },
           onError: (error) => {
             messageApi.error("Error updating interaction");

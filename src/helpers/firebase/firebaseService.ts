@@ -24,7 +24,6 @@ export const fetchCollectionCount = async (collectionName: string): Promise<numb
  * @returns - 신규 문서 개수
  */
 export const fetchNewUsersCount = async (collectionName: string, days: number) => {
-  // 현재 시간과 7일 전 시간 계산
   const now = new Date();
   const pastDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
@@ -38,4 +37,50 @@ export const fetchNewUsersCount = async (collectionName: string, days: number) =
   // 쿼리 실행 및 결과 반환
   const querySnapshot = await getDocs(q);
   return querySnapshot.size; // 최근 7일 내 문서 수 반환
+};
+
+/**
+ * Firestore 컬렉션에서 고객 데이터를 가져오고 이탈 위험도를 계산하는 함수
+ * @returns - 고객 데이터와 이탈 위험도 배열
+ */
+export const fetchCustomerRiskData = async () => {
+  try {
+    const collectionRef = collection(firestoreDatabase_base, "customer"); // 고객 컬렉션 참조
+    const querySnapshot = await getDocs(collectionRef);
+
+    const customers = [];
+    const now = new Date();
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // created_at 필드를 Date 객체로 변환
+      const createdAt = data.created_at instanceof Timestamp ? data.created_at.toDate() : new Date(data.created_at);
+
+      // 고객 생성 후 경과한 일수 계산
+      const daysSinceCreation = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+
+      // 위험도 계산 로직
+      let riskLevel = "Low";
+      if (daysSinceCreation > 90 || (data.totalRevenue !== undefined && data.totalRevenue < 50)) {
+        riskLevel = "High";
+      } else if (daysSinceCreation > 60) {
+        riskLevel = "Medium";
+      }
+
+      // 고객 데이터 추가
+      customers.push({
+        id: doc.id,
+        name: data.name,
+        created_at: createdAt,
+        totalRevenue: data.totalRevenue || 0,
+        riskLevel,
+      });
+    });
+
+    return customers; // 고객 데이터와 위험도 배열 반환
+  } catch (error) {
+    console.error("Error fetching customer risk data:", error);
+    throw error;
+  }
 };
