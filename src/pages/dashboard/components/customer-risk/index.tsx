@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, List, Typography } from "antd";
+import { SmileOutlined } from "@ant-design/icons"; // 아이콘 추가
 import { fetchCustomerRiskData } from "../../../../helpers/firebase/firebaseService";
 
 interface Customer {
@@ -70,7 +71,12 @@ export const CustomerRisk: React.FC<{ limit?: number }> = ({ limit = 5 }) => {
   if (loading) {
     return (
       <Card
-        title="Customer Churn Risk"
+        title={
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <SmileOutlined />
+            <span>Customer Churn Risk</span>
+          </div>
+        }
         headStyle={{ padding: "16px" }}
         bodyStyle={{ padding: "16px" }}
       >
@@ -82,7 +88,12 @@ export const CustomerRisk: React.FC<{ limit?: number }> = ({ limit = 5 }) => {
   if (error) {
     return (
       <Card
-        title="Customer Churn Risk"
+        title={
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <SmileOutlined />
+            <span>Customer Churn Risk</span>
+          </div>
+        }
         headStyle={{ padding: "16px" }}
         bodyStyle={{ padding: "16px" }}
       >
@@ -93,7 +104,12 @@ export const CustomerRisk: React.FC<{ limit?: number }> = ({ limit = 5 }) => {
 
   return (
     <Card
-      title="Top 5 Customer Churn Risk"
+      title={
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <SmileOutlined />
+          <span>Top 5 Customer Churn Risk</span>
+        </div>
+      }
       headStyle={{ padding: "16px" }}
       bodyStyle={{ padding: "0 1rem" }}
     >
