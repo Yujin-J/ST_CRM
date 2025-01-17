@@ -79,6 +79,17 @@ export const CustomerForm = () => {
             }}
           />
 
+          {/* Contact Name */}
+          <Form.Item
+            label="Name"
+            name="name" // 필드 이름 설정
+            rules={[
+              { required: true, message: "Please enter the contact name" }, // 필수 입력
+            ]}
+          >
+            <Input placeholder="Enter contact name" value={customer?.name ?? ""} />
+          </Form.Item>
+
           <Form.Item label="Customer" name={["customer", "id"]}>
             <Select
               placeholder="Please select customer"

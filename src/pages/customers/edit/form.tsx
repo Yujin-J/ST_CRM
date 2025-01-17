@@ -67,6 +67,7 @@ export const CustomerForm = () => {
             ...customer,
             Address: customer?.Address || "",
             Phone: customer?.Phone || "",
+            name: customer?.name || "", // 이름 초기값 추가
           }}
         >
           <CustomAvatar
@@ -80,6 +81,17 @@ export const CustomerForm = () => {
             }}
           />
 
+        {/* Name Field */}
+        <Form.Item
+            label="Name" // 필드 라벨
+            name="name" // 필드 이름
+            rules={[
+              { required: true, message: "Please enter the customer's name" }, // 필수 입력
+            ]}
+          >
+            <Input placeholder="Enter customer name" />
+          </Form.Item>
+          
           <Form.Item label="Sales owner" name={["salesOwner", "id"]}>
             <Select
               placeholder="Please select sales owner"
