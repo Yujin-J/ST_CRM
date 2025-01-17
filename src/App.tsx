@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Refine } from "@refinedev/core";
+import { Refine, ErrorComponent } from "@refinedev/core";
 import { RefineThemes } from "@refinedev/antd";
 import {
   DashboardOutlined,
@@ -121,29 +121,30 @@ const App: React.FC = () => {
             <Layout>
               <Layout.Content style={{ padding: "16px" }}>
               <Refine
-            routerProvider={routerProvider}
-            resources={[]}
-            options={{}}
-          >
-            {/* 사용자 정의 레이아웃을 Refine의 children으로 배치 */}
-            <CustomLayout>
-              <AppRoutes />
-              <Chatbot />
-              <Drawer
-                title="Notifications"
-                placement="right"
-                closable
-                onClose={toggleDrawer}
-                open={isDrawerOpen}
-                width={400}
+                routerProvider={routerProvider}
+                options={{
+                  disableTelemetry: true
+                }}
               >
-                <NotificationComponent
-                  onOpen={toggleDrawer}
-                  isOpen={isDrawerOpen}
-                />
-              </Drawer>
-            </CustomLayout>
-          </Refine>
+                {/* Your custom layout and components */}
+                <CustomLayout>
+                  <AppRoutes />
+                  <Chatbot />
+                  <Drawer
+                    title="Notifications"
+                    placement="right"
+                    closable
+                    onClose={toggleDrawer}
+                    open={isDrawerOpen}
+                    width={400}
+                  >
+                    <NotificationComponent
+                      onOpen={toggleDrawer}
+                      isOpen={isDrawerOpen}
+                    />
+                  </Drawer>
+                </CustomLayout>
+              </Refine>
 
                 <Chatbot />
 

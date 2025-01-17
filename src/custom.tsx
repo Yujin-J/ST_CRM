@@ -1,14 +1,13 @@
 import React from "react";
-import { Layout as AntdLayout } from "antd";
+import { Layout } from "antd";
 
-const CustomLayout: React.FC = ({ children }) => {
+const CustomLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <AntdLayout style={{ minHeight: "100vh" }}>
-      {/* 헤더를 유지하려면 여기에 추가 가능 */}
-      <AntdLayout.Content style={{ padding: "16px" }}>
+    <Layout style={{ minHeight: "100vh" }}>
+      <Layout.Content style={{ padding: "16px" }}>
         {children}
-      </AntdLayout.Content>
-    </AntdLayout>
+      </Layout.Content>
+    </Layout>
   );
 };
 
