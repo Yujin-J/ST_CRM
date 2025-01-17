@@ -1,237 +1,218 @@
 import React, { useState, useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth"; 
+import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../helpers/firebase/firebaseConfig";
-import { getMultipleCollections } from "../helpers/firebase/firestoreHelpers"; 
+import { getMultipleCollections } from "../helpers/firebase/firestoreHelpers";
 import "./Chatbot.css";
 
 type Message = {
-    role: string;
-    content: string;
-    timestamp: string; 
+  role: string;
+  content: string;
+  timestamp: string;
 };
 
 const Chatbot = () => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            role: "bot",
-            content: "안녕하세요. 저는 CRM 시스템 데이터베이스를 동작하는 AI 챗봇 비서입니다. 어떻게 도와드릴까요?",
-            timestamp: new Date().toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-            }),
-        },
-    ]);
-    const [input, setInput] = useState("");
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "bot",
+      content: "안녕하세요. CRM 시스템 데이터베이스를 동작하는 AI 챗봇 비서입니다. 어떻게 도와드릴까요?",
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-    // 🔹 DB 전체 내용을 문자열로 저장할 상태
-    const [dbData, setDbData] = useState<string>("");
+  const [dbData, setDbData] = useState<string>("");
 
-    // OpenAI API 키 & URL (Vite 환경변수)
-    const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
-    const API_URL = import.meta.env.VITE_OPENAI_API_URL;
+  // Google AI Studio API 키 및 URL
+  const API_KEY = import.meta.env.VITE_AI_API_KEY;
+  const API_URL = import.meta.env.VITE_AI_API_URL;
 
-    // 1) Firebase 인증 상태 확인
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setIsAuthenticated(!!user);
-        });
-        return () => unsubscribe();
-    }, []);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+    });
+    return () => unsubscribe();
+  }, []);
 
-    // 2) 컴포넌트 마운트 시, Firestore에서 전체 데이터 불러오기
-    useEffect(() => {
-        const loadInteractionData = async () => {
-            try {
-                const interactions = await getMultipleCollections(["interaction", "contact", "customer"]);
-                const dbString = JSON.stringify(interactions, null, 2);
-                setDbData(dbString);
-            } catch (error) {
-                console.error("Error loading data:", error);
-            }
-        };
-        loadInteractionData();
-    }, []);
-
-    // 🔸 toggleChatbot
-    const toggleChatbot = () => {
-        setIsOpen(!isOpen);
+  useEffect(() => {
+    const loadInteractionData = async () => {
+      try {
+        const interactions = await getMultipleCollections(["interaction", "contact", "customer"]);
+        const dbString = JSON.stringify(interactions, null, 2);
+        setDbData(dbString);
+      } catch (error) {
+        console.error("Error loading data:", error);
+      }
     };
+    loadInteractionData();
+  }, []);
 
-    // 3) OpenAI API 호출 로직
-    const fetchBotResponse = async (userMessage: string): Promise<string> => {
-        try {
-            // (1) systemPrompt
-            const systemPrompt = `
-너는 CRM 시스템의 데이터베이스를 기반으로 동작하는 AI 챗봇 비서야.
-데이터베이스(DB) 구조는 아래와 같고, 그 내용(전체 JSON)은 따로 제공될 거야.
-사용자가 질문하면 DB에서 답변을 찾아, 반드시 JSON 형식으로 결과를 리턴해.
-DB에 없는 정보는 절대 추측해서 말하지 말고, "요청하신 데이터는 현재 데이터베이스에 없습니다." 라고 답해.
+  const toggleChatbot = () => {
+    setIsOpen(!isOpen);
+  };
 
----
-[DB 스키마 설명]
-1) interaction 컬렉션
-    - contact_id, notes, classification { Classification, Sentiment_score }, date
-2) contact 컬렉션
-    - customer { id, name, email, phone, industry, totalRevenue, website }
-3) customer 컬렉션
-    - name, email, phone, address, businessType, companySize, country, industry, totalRevenue
-    - salesOwner { id, totalRevenue, website }
-
----
-[답변 형식]
-1. 반드시 아래 순서로 JSON 필드를 기술할 것:
-   - "intent": (interaction_search, contact_search, customer_search 중 하나)
-   - "message": (문자열, 예: "입력하신 질문에 해당하는 총 2개의 데이터가 있습니다.")
-   - "data": (JSON 배열 형태, 검색 결과 목록)
-2. 결과가 여러 개일 경우, 
-   - "message" 필드에 "입력하신 질문에 해당하는 총 n개의 데이터가 있습니다."라고 적어준다.
-   - 이후 "data" 배열에 실제 결과를 나열
-3. DB에 없는 정보나, DB에서 찾을 수 없는 질문 -> "요청하신 데이터는 현재 데이터베이스에 없습니다."
-4. 사용 언어: 사용자가 입력한 언어를 그대로 따라갈 것.
-5. 항상 정중하고 간결하게 답변할 것.
-`;
-
-            // (2) dbContext
-            const dbContext = `
-            [실제 DB JSON]
-            ${dbData}
-            `;
-
-            // (3) userMessage
-            // 이미 인자로 들어온 userMessage를 그대로 사용
-
-            const messages = [
-                { role: "system", content: systemPrompt },
-                { role: "system", content: dbContext },
-                { role: "user", content: userMessage },
-            ];
-
-            const response = await fetch(API_URL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${API_KEY}`,
-                },
-                body: JSON.stringify({
-                    model: "gpt-4o-mini",
-                    messages,
-                    max_tokens: 2000,
-                    temperature: 0.3,
-                    top_p: 0.3,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`API Error: ${response.status}`);
-            }
-
-            const data = await response.json();
-            return data.choices[0]?.message?.content.trim() || "No response from AI.";
-        } catch (error) {
-            console.error("Error fetching AI response:", error);
-            return "Error: Unable to fetch response.";
-        }
-    };
-
-    // 4) 메시지 전송 로직
-    const sendMessage = async () => {
-        if (!input.trim()) return;
-
-        const timestamp = new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-
-        // 사용자 메시지 추가
-        const newMessages = [
-            ...messages,
-            { role: "user", content: input, timestamp },
-        ];
-        setMessages(newMessages);
-        setInput("");
-        setIsLoading(true);
-
-        // GPT 호출
-        const botResponse = await fetchBotResponse(input);
-
-        // 봇 메시지 추가
-        setMessages([
-            ...newMessages,
-            {
-                role: "bot",
-                content: botResponse,
-                timestamp: new Date().toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                }),
-            },
-        ]);
-        setIsLoading(false);
-    };
-
-    if (!isAuthenticated) {
-        return null;
+  // ▼▼▼ 수정된 부분 ▼▼▼
+  const fetchBotResponse = async (userMessage: string): Promise<string> => {
+    if (!dbData) {
+      console.error("DB 데이터가 비어 있습니다.");
+      return "DB 데이터를 로드하지 못했습니다. 잠시 후 다시 시도해주세요.";
     }
 
-    return (
-        <div>
-            <button onClick={toggleChatbot} className="chatbot-button">
-                💬
-            </button>
+    try {
+      // 실제로는 promptData처럼 CSV나 DB 데이터를 참고해서
+      // 추가 프롬프트를 구성할 수도 있습니다.
+      const text = `
+        [CRM 시스템 데이터]
+        ${dbData}
 
-            {isOpen && (
-                <>
-                    <div className="chatbot-overlay" onClick={toggleChatbot}></div>
+        [사용자 질문]
+        ${userMessage}
 
-                    <div className="chatbot-window">
-                        <div className="chatbot-header">CRM AI Chatbot</div>
+        DB에서 답변을 찾아 JSON 형식으로 알려줘.
+        없으면 "요청하신 데이터는 현재 데이터베이스에 없습니다."라고 답변해.
+      `;
 
-                        <div className="chatbot-content">
-                            {messages.map((message, index) => (
-                                <div
-                                    key={index}
-                                    className={`chatbot-message ${
-                                        message.role === "user" ? "user" : "bot"
-                                    }`}
-                                >
-                                    {message.content}
-                                    <span className="timestamp">{message.timestamp}</span>
-                                </div>
-                            ))}
-                            {isLoading && (
-                                <div className="chatbot-message bot">
-                                    Responding...
-                                </div>
-                            )}
-                        </div>
+      // callAIStudio 코드와 동일하게 "contents" 구조로 요청
+      const contents = [
+        {
+          role: "user", 
+          parts: [
+            {
+              text, // 위에서 만든 text
+            },
+          ],
+        },
+      ];
 
-                        <div className="chatbot-input-container">
-                            <input
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                onKeyPress={(e) =>
-                                    e.key === "Enter" && !isLoading && sendMessage()
-                                }
-                                className="chatbot-input"
-                                placeholder="Enter your message..."
-                                disabled={isLoading}
-                            />
-                            <button
-                                onClick={sendMessage}
-                                className="chatbot-send-button"
-                                disabled={isLoading}
-                            >
-                                {isLoading ? "Responding..." : "Send"}
-                            </button>
-                        </div>
-                    </div>
-                </>
-            )}
-        </div>
-    );
+      // temperature, max_output_tokens, top_p 등을
+      // 한번에 넘기는 경우도 있고,
+      // parameters라는 필드를 따로 요구하는 모델도 있습니다.
+      // 아래는 가장 단순히 contents만 넘기는 예시:
+      const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ contents }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // 응답 또한 callAIStudio와 동일하게 `data.candidates[...]`로 처리
+      const candidate = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (candidate) {
+        return candidate;
+      } else {
+        return "응답을 처리하지 못했습니다. 다시 시도해주세요.";
+      }
+    } catch (error) {
+      console.error("Error fetching AI response:", error);
+      return "AI 응답을 처리하지 못했습니다. 오류가 발생했습니다.";
+    }
+  };
+  // ▲▲▲ 수정된 부분 ▲▲▲
+
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+
+    const timestamp = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const newMessages = [
+      ...messages,
+      { role: "user", content: input, timestamp },
+    ];
+    setMessages(newMessages);
+    setInput("");
+    setIsLoading(true);
+
+    const botResponse = await fetchBotResponse(input);
+
+    setMessages([
+      ...newMessages,
+      {
+        role: "bot",
+        content: botResponse,
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
+    setIsLoading(false);
+  };
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <div>
+      <button onClick={toggleChatbot} className="chatbot-button">
+        💬
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="chatbot-overlay" onClick={toggleChatbot}></div>
+
+          <div className="chatbot-window">
+            <div className="chatbot-header">CRM AI Chatbot</div>
+
+            <div className="chatbot-content">
+              {messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`chatbot-message ${
+                    message.role === "user" ? "user" : "bot"
+                  }`}
+                >
+                  {message.content}
+                  <span className="timestamp">{message.timestamp}</span>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="chatbot-message bot">
+                  Responding...
+                </div>
+              )}
+            </div>
+
+            <div className="chatbot-input-container">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={(e) =>
+                  e.key === "Enter" && !isLoading && sendMessage()
+                }
+                className="chatbot-input"
+                placeholder="Enter your message..."
+                disabled={isLoading}
+              />
+              <button
+                onClick={sendMessage}
+                className="chatbot-send-button"
+                disabled={isLoading}
+              >
+                {isLoading ? "Responding..." : "Send"}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
 };
 
 export default Chatbot;

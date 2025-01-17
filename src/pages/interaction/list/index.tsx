@@ -114,6 +114,7 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
   // Analyze 버튼 클릭 핸들러
   const handleAnalyze = async (interaction: any) => {
     const id = interaction.id;
+    console.log("빼애애액");
     setAnalyzingIds((prev) => ({ ...prev, [id]: true }));
 
     try {

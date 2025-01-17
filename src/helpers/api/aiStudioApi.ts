@@ -27,7 +27,7 @@ async function loadPromptFromCSV() {
       .map((row) => `Input: ${row["input:"]}\n출력: ${row["output:"]}`)
       .join("\n\n");
 
-    console.log("적용된 프롬프트 데이터:", promptData);
+    //console.log("적용된 프롬프트 데이터:", promptData);
   } catch (error) {
     console.error("CSV 파일 로딩 실패:", error);
   }
@@ -54,8 +54,7 @@ export const callAIStudio = async (
       ],
     }));
 
-    console.log("Request Contents:", JSON.stringify({ contents }));
-
+    console.log("여기가 안 되나?");
     // API 요청
     const response = await axios.post(
       `${AI_API_URL}?key=${AI_API_KEY}`,
@@ -67,12 +66,14 @@ export const callAIStudio = async (
       }
     );
 
+    console.log(response);
+
     // 응답 데이터를 매핑
     return inputs.map((input, index) => {
       const responseText =
         response.data.candidates[index]?.content.parts[0]?.text ||
         "No classification";
-
+      
       const splitIndex = responseText.indexOf("\n\n");
       const classification =
         splitIndex !== -1
