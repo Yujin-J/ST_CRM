@@ -30,3 +30,7 @@ export const firestoreDatabase_base = getFirestore(firebaseApp_base);
 // Export Firestore object as "db" for consistency
 export const firebaseAuth = new FirebaseAuth();
 export const firestoreDataProvider = new FirestoreDatabase();
+
+export const base_auth = getAuth(firebaseApp_base);
+export const base_firestore = getFirestore(firebaseApp_base);
+export const base_googleProvider = new GoogleAuthProvider();
