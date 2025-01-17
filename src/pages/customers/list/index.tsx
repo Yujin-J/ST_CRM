@@ -91,6 +91,10 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
             total: filteredCustomers.length,
             pageSize: 12,
             pageSizeOptions: ["12", "24", "48", "96"],
+            position: ["bottomCenter"], // 페이지 버튼을 하단 중앙으로 위치 조정
+                      showTotal: (total) => (
+                        <PaginationTotal total={total} entityName="customers" />
+                      ),
           }}
           rowKey="id"
         >
