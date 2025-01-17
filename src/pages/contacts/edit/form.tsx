@@ -93,36 +93,6 @@ export const CustomerForm = () => {
               }))}
             />
           </Form.Item>
-
-          <Form.Item label="Company size" name="companySize">
-            <Select
-              options={companySizeOptions}
-              value={customer?.companySize ?? ""}
-            />
-          </Form.Item>
-          <Form.Item label="Total revenue" name="totalRevenue">
-            <InputNumber
-              autoFocus
-              addonBefore={"$"}
-              min={0}
-              placeholder="0,00"
-              formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              }
-            />
-          </Form.Item>
-          <Form.Item label="Industry" name="industry">
-            <Select
-              options={industryOptions}
-              value={customer?.industry ?? ""}
-            />
-          </Form.Item>
-          <Form.Item label="Business type" name="businessType">
-            <Select
-              options={businessTypeOptions}
-              value={customer?.businessType ?? ""}
-            />
-          </Form.Item>
           <Form.Item label="Country" name="country">
             <Input placeholder="Country" value={customer?.country ?? ""} />
           </Form.Item>

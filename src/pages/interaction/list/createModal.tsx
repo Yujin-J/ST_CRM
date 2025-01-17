@@ -4,6 +4,8 @@ import { useState } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
 import { message } from "antd";
+import { callAIStudio } from "../../../helpers/api/aiStudioApi"; // AI API 호출 함수
+import { updateDbWithChatbot } from "../../../helpers/firebase/firestoreHelpers"; // Firestore 업데이트 함수
 
 export const InteractionCreateModal = () => {
   const go = useGo();
@@ -28,33 +30,56 @@ export const InteractionCreateModal = () => {
     });
   };
 
-  // 폼 전송 처리
-  const onFinish = (values: any) => {
-    // 날짜를 Date 객체 혹은 문자열로 저장하고 싶다면 이곳에서 변환
-    // 예) 문자열로 저장할 경우:
+  const onFinish = async (values: any) => {
     const dateValue = values.date ? dayjs(values.date).format("YYYY-MM-DD") : "";
-
-    // interaction에 필요한 필드만 추출
+  
     const payload = {
       contact_id: values.contact_id || "",
       date: dateValue,
       notes: values.notes || "",
-      // classification, sentiment 등의 필드는 사용자가 직접 입력하지 않으므로 생략
-      // 예: classification: "",
-      //     sentiment: "",
     };
-
+  
     createInteraction(
       {
         resource: "interaction",
         values: payload,
       },
       {
-        onSuccess: () => {
+        onSuccess: async (createdData) => {
           console.log("Interaction created successfully:", payload);
+  
           // 성공 메시지 표시
           message.success("Interaction has been added successfully!");
-          goToInteractionListPage(); // 생성 후 이동
+  
+          // 분석 함수 호출
+          const interactionId = createdData?.data?.id; // 생성된 데이터의 ID 가져오기
+          if (interactionId) {
+            try {
+              const analysisResult = await callAIStudio(
+                [{ id: interactionId, notes: payload.notes }],
+                "Review Classification"
+              );
+  
+              console.log("Analysis Result:", analysisResult);
+  
+              // Firestore에 분석 결과 업데이트
+              await updateDbWithChatbot(
+                interactionId,
+                "Review Classification",
+                "interaction",
+                {
+                  Classification: analysisResult[0].Classification,
+                  Sentiment_score: analysisResult[0].Sentiment_score,
+                }
+              );
+  
+              console.log(`Interaction ${interactionId} analyzed successfully!`);
+            } catch (error) {
+              console.error(`Error analyzing interaction ${interactionId}:`, error);
+            }
+          }
+  
+          goToInteractionListPage(); // 생성 및 분석 후 이동
         },
         onError: (error) => {
           console.error("Failed to create interaction:", error);
@@ -62,6 +87,7 @@ export const InteractionCreateModal = () => {
       }
     );
   };
+  
 
   return (
     <Modal

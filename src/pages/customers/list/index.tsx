@@ -14,17 +14,28 @@ import { CustomAvatar } from "../../../components/custom-avatar";
 import { Text } from "../../../components/text";
 import { currencyNumber } from "../../../utilities/currency-number";
 import { useDelete } from "@refinedev/core";
-import { firestoreDataProvider } from "../../../helpers/firebase/firebaseConfig";
 import { Popconfirm } from "antd";
-import { DeleteOutlined } from "@ant-design/icons"
+import { DeleteOutlined } from "@ant-design/icons";
 import { message } from "antd";
 
 export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
   const go = useGo();
   const [searchText, setSearchText] = useState("");
 
-  // Firestore에서 customer 및 user 데이터 가져오기
-  const { data, isLoading } = useList({ resource: "customer" });
+  // Firestore에서 customer 데이터를 created_at 기준 내림차순으로 가져오기
+  const { data, isLoading } = useList({
+    resource: "customer",
+    config: {
+      sort: [
+        {
+          field: "created_at",
+          order: "desc", // 내림차순 정렬
+        },
+      ],
+    },
+  });
+
+  // Firestore에서 user 데이터 가져오기
   const { data: usersData, isLoading: isUsersLoading } = useList({
     resource: "user",
   });
@@ -80,6 +91,10 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
             total: filteredCustomers.length,
             pageSize: 12,
             pageSizeOptions: ["12", "24", "48", "96"],
+            position: ["bottomCenter"], // 페이지 버튼을 하단 중앙으로 위치 조정
+                      showTotal: (total) => (
+                        <PaginationTotal total={total} entityName="customers" />
+                      ),
           }}
           rowKey="id"
         >

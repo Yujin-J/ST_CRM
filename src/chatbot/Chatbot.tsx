@@ -116,7 +116,7 @@ DB에 없는 정보는 절대 추측해서 말하지 말고, "요청하신 데�
                     Authorization: `Bearer ${API_KEY}`,
                 },
                 body: JSON.stringify({
-                    model: "gpt-4",
+                    model: "gpt-4o-mini",
                     messages,
                     max_tokens: 2000,
                     temperature: 0.3,
