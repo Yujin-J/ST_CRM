@@ -1,6 +1,6 @@
 import { Edit } from "@refinedev/antd";
 import { Form, Input, InputNumber, Select, message } from "antd";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; // useNavigate 추가
 import { useOne, useUpdate, useList } from "@refinedev/core";
 import { CustomAvatar } from "../../../components/custom-avatar";
 import { getNameInitials } from "../../../utilities/get-name-initials";
@@ -13,6 +13,7 @@ import { User } from "../../../types";
 export const CustomerForm = () => {
   const [form] = Form.useForm();
   const params = useParams();
+  const navigate = useNavigate(); // useNavigate 훅 추가
   const [messageApi, contextHolder] = message.useMessage();
 
   const { mutate } = useUpdate();
@@ -36,7 +37,8 @@ export const CustomerForm = () => {
       },
       {
         onSuccess: () => {
-          messageApi.success("Customer updated successfully");
+          message.success("Customer updated successfully"); // navigate 이전에 메시지 표시
+          navigate(-1); // 이전 페이지로 이동
         },
         onError: (error) => {
           messageApi.error("Error updating customer");
@@ -61,9 +63,11 @@ export const CustomerForm = () => {
           form={form}
           layout="vertical"
           onFinish={onFinish}
-          initialValues={{...customer,
+          initialValues={{
+            ...customer,
             Address: customer?.Address || "",
             Phone: customer?.Phone || "",
+            name: customer?.name || "", // 이름 초기값 추가
           }}
         >
           <CustomAvatar
@@ -77,6 +81,17 @@ export const CustomerForm = () => {
             }}
           />
 
+        {/* Name Field */}
+        <Form.Item
+            label="Name" // 필드 라벨
+            name="name" // 필드 이름
+            rules={[
+              { required: true, message: "Please enter the customer's name" }, // 필수 입력
+            ]}
+          >
+            <Input placeholder="Enter customer name" />
+          </Form.Item>
+          
           <Form.Item label="Sales owner" name={["salesOwner", "id"]}>
             <Select
               placeholder="Please select sales owner"
@@ -117,7 +132,7 @@ export const CustomerForm = () => {
           </Form.Item>
           <Form.Item label="Website" name="website">
             <Input placeholder="Website" />
-            </Form.Item>
+          </Form.Item>
           <Form.Item label="email" name="email">
             <Input placeholder="email" />
           </Form.Item>

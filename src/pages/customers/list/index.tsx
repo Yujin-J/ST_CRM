@@ -6,25 +6,36 @@ import {
   FilterDropdown,
   List,
 } from "@refinedev/antd";
-import { useGo, useList} from "@refinedev/core";
+import { useGo, useList } from "@refinedev/core";
 import { SearchOutlined } from "@ant-design/icons";
 import { Input, Space, Table } from "antd";
 import { PaginationTotal } from "../../../components/pagination-total";
 import { CustomAvatar } from "../../../components/custom-avatar";
 import { Text } from "../../../components/text";
 import { currencyNumber } from "../../../utilities/currency-number";
-import { useDelete } from "@refinedev/core"
-import { firestoreDataProvider } from "../../../helpers/firebase/firebaseConfig"
+import { useDelete } from "@refinedev/core";
 import { Popconfirm } from "antd";
-import { DeleteOutlined } from "@ant-design/icons"
+import { DeleteOutlined } from "@ant-design/icons";
 import { message } from "antd";
 
 export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
   const go = useGo();
   const [searchText, setSearchText] = useState("");
 
-  // Firestore에서 customer 및 user 데이터 가져오기
-  const { data, isLoading } = useList({ resource: "customer" });
+  // Firestore에서 customer 데이터를 created_at 기준 내림차순으로 가져오기
+  const { data, isLoading } = useList({
+    resource: "customer",
+    config: {
+      sort: [
+        {
+          field: "created_at",
+          order: "desc", // 내림차순 정렬
+        },
+      ],
+    },
+  });
+
+  // Firestore에서 user 데이터 가져오기
   const { data: usersData, isLoading: isUsersLoading } = useList({
     resource: "user",
   });
@@ -35,7 +46,9 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
 
   // user 데이터를 Map 형태로 변환 (id를 키로 사용)
   const userMap = users.reduce((acc, user) => {
-    acc[user.id] = user;
+    if (user?.id) {
+      acc[user.id] = user;
+    }
     return acc;
   }, {});
 
@@ -44,11 +57,11 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
     customer.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const {mutate: deleteCustomer } = useDelete();
+  const { mutate: deleteCustomer } = useDelete();
 
   const handleDelete = (id) => {
     deleteCustomer(
-      { resource: "customer", id:id },
+      { resource: "customer", id: id },
       {
         onSuccess: () => {
           message.success("Customer has been deleted successfully!");
@@ -66,7 +79,9 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
         breadcrumb={false}
         headerButtons={() => (
           <CreateButton
-            onClick={() => go({ to: { resource: "customers", action: "create" } })}
+            onClick={() =>
+              go({ to: { resource: "customers", action: "create" } })
+            }
           />
         )}
       >
@@ -76,6 +91,10 @@ export const CustomerListPage = ({ children }: React.PropsWithChildren) => {
             total: filteredCustomers.length,
             pageSize: 12,
             pageSizeOptions: ["12", "24", "48", "96"],
+            position: ["bottomCenter"], // 페이지 버튼을 하단 중앙으로 위치 조정
+                      showTotal: (total) => (
+                        <PaginationTotal total={total} entityName="customers" />
+                      ),
           }}
           rowKey="id"
         >

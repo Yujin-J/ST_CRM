@@ -1,18 +1,16 @@
 import { Edit } from "@refinedev/antd";
 import { Form, Input, InputNumber, Select, message } from "antd";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useOne, useUpdate, useList } from "@refinedev/core";
 import { CustomAvatar } from "../../../components/custom-avatar";
 import { getNameInitials } from "../../../utilities/get-name-initials";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
-import { collection, getDocs } from "firebase/firestore";
-import { firestoreDatabase } from "../../../helpers/firebase/firebaseConfig";
-import React, { useEffect, useState } from "react";
-import { User } from "../../../types";
+import React from "react";
 
 export const CustomerForm = () => {
   const [form] = Form.useForm();
   const params = useParams();
+  const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
 
   const { mutate } = useUpdate();
@@ -22,16 +20,17 @@ export const CustomerForm = () => {
   });
 
   const { data: usersData, isLoading: isLoadingUsers } = useList({
-    resource: "user", // Firestore의 user 컬렉션
+    resource: "user",
   });
 
   const { data: customersData } = useList({
-    resource: "customer"
-  })
+    resource: "customer",
+  });
 
   const customers = customersData?.data || [];
   const customer = data?.data;
-  const users = usersData?.data || []; // Firestore에서 가져온 user 데이터
+  const users = usersData?.data || [];
+
   const onFinish = (values: any) => {
     mutate(
       {
@@ -41,7 +40,8 @@ export const CustomerForm = () => {
       },
       {
         onSuccess: () => {
-          messageApi.success("Contact updated successfully");
+          message.success("Contact updated successfully"); // navigate 이전에 메시지 표시
+          navigate(-1); // 이전 페이지로 이동
         },
         onError: (error) => {
           messageApi.error("Error updating customer");
@@ -79,6 +79,17 @@ export const CustomerForm = () => {
             }}
           />
 
+          {/* Contact Name */}
+          <Form.Item
+            label="Name"
+            name="name" // 필드 이름 설정
+            rules={[
+              { required: true, message: "Please enter the contact name" }, // 필수 입력
+            ]}
+          >
+            <Input placeholder="Enter contact name" value={customer?.name ?? ""} />
+          </Form.Item>
+
           <Form.Item label="Customer" name={["customer", "id"]}>
             <Select
               placeholder="Please select customer"
@@ -93,41 +104,20 @@ export const CustomerForm = () => {
               }))}
             />
           </Form.Item>
-
-          <Form.Item label="Company size" name="companySize">
-            <Select options={companySizeOptions} value={customer?.companySize ?? ""}/>
-          </Form.Item>
-          <Form.Item label="Total revenue" name="totalRevenue">
-            <InputNumber
-              autoFocus
-              addonBefore={"$"}
-              min={0}
-              placeholder="0,00"
-              formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              }
-            />
-          </Form.Item>
-          <Form.Item label="Industry" name="industry">
-            <Select options={industryOptions} value={customer?.industry ?? ""}/>
-          </Form.Item>
-          <Form.Item label="Business type" name="businessType">
-            <Select options={businessTypeOptions} value={customer?.businessType ?? ""}/>
-          </Form.Item>
           <Form.Item label="Country" name="country">
-            <Input placeholder="Country" value={customer?.country ?? ""}/>
+            <Input placeholder="Country" value={customer?.country ?? ""} />
           </Form.Item>
           <Form.Item label="Website" name="website">
-            <Input placeholder="Website" value={customer?.website ?? ""}/>
-            </Form.Item>
+            <Input placeholder="Website" value={customer?.website ?? ""} />
+          </Form.Item>
           <Form.Item label="email" name="email">
-            <Input placeholder="email" value={customer?.email ?? ""}/>
+            <Input placeholder="email" value={customer?.email ?? ""} />
           </Form.Item>
           <Form.Item label="Address" name="address">
-            <Input placeholder="Address" value={customer?.address ?? ""}/>
+            <Input placeholder="Address" value={customer?.address ?? ""} />
           </Form.Item>
           <Form.Item label="Phone" name="phone">
-            <Input placeholder="Phone" value={customer?.phone ?? ""}/>
+            <Input placeholder="Phone" value={customer?.phone ?? ""} />
           </Form.Item>
         </Form>
       </Edit>
@@ -137,18 +127,9 @@ export const CustomerForm = () => {
 
 const companySizeOptions = [
   { label: "Enterprise", value: "ENTERPRISE" },
-  {
-    label: "Large",
-    value: "LARGE",
-  },
-  {
-    label: "Medium",
-    value: "MEDIUM",
-  },
-  {
-    label: "Small",
-    value: "SMALL",
-  },
+  { label: "Large", value: "LARGE" },
+  { label: "Medium", value: "MEDIUM" },
+  { label: "Small", value: "SMALL" },
 ];
 
 const industryOptions = [
@@ -185,12 +166,6 @@ const industryOptions = [
 
 const businessTypeOptions = [
   { label: "B2B", value: "B2B" },
-  {
-    label: "B2C",
-    value: "B2C",
-  },
-  {
-    label: "B2G",
-    value: "B2G",
-  },
+  { label: "B2C", value: "B2C" },
+  { label: "B2G", value: "B2G" },
 ];

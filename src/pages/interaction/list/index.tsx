@@ -19,11 +19,15 @@ import { message } from "antd";
 
 export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
   const go = useGo();
-  const [searchText, setSearchText] = useState(""); 
+  const [searchText, setSearchText] = useState("");
   const [analyzingIds, setAnalyzingIds] = useState<Record<string, boolean>>({});
 
   // 1) interaction 목록 불러오기
-  const { data: interactionData, isLoading, refetch } = useList({
+  const {
+    data: interactionData,
+    isLoading,
+    refetch,
+  } = useList({
     resource: "interaction",
     queryOptions: {
       onSuccess: (fetchedData) => {
@@ -51,10 +55,12 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
     const map: Record<string, { name: string; avatarUrl?: string }> = {};
     if (contactsData?.data) {
       contactsData.data.forEach((contact) => {
-        map[contact.id] = {
-          name: contact.name,
-          avatarUrl: contact.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${contact.name}`, // contact 컬렉션에 avatarUrl 필드가 있다고 가정
-        };
+        if (contact.id) {
+          map[contact.id] = {
+            name: contact.name || "No contact name",
+            avatarUrl: contact.avatarUrl,
+          };
+        }
       });
     }
     return map;
@@ -154,6 +160,8 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
           total: filteredInteractions.length,
           pageSize: 12,
           pageSizeOptions: ["12", "24", "48", "96"],
+          position: ["bottomCenter"], // 페이지 버튼을 하단 중앙으로 위치 조정
+
           showTotal: (total) => (
             <PaginationTotal total={total} entityName="interactions" />
           ),
@@ -166,7 +174,9 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
           dataIndex="date"
           title="Date"
           render={(text) => <Text>{text}</Text>}
-          sorter={(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()}
+          sorter={(a, b) =>
+            new Date(a.date).getTime() - new Date(b.date).getTime()
+          }
         />
 
         {/* Contact Name + Avatar */}

@@ -7,6 +7,7 @@ import { firestoreDatabase_base as db } from "../../../../helpers/firebase/fireb
 type RecentFeedbackData = {
   review: string;
   sentiment: string;
+  score: number; // 점수를 추가합니다.
 };
 
 export const DashboardRecentReviews = ({ limit = 5 }: { limit?: number }) => {
@@ -22,8 +23,9 @@ export const DashboardRecentReviews = ({ limit = 5 }: { limit?: number }) => {
         const feedbackData = querySnapshot.docs.map((doc) => {
           const data = doc.data();
           return {
-            review: data.notes,
-            sentiment: data.classification.Classification,
+            review: data.notes || "", // notes 필드 가져오기
+            sentiment: data.classification?.Classification || "Unknown", // classification.Classification 가져오기
+            score: data.classification?.Sentiment_score || 0, // classification.Sentiment_score 가져오기
           };
         });
 
@@ -35,6 +37,19 @@ export const DashboardRecentReviews = ({ limit = 5 }: { limit?: number }) => {
 
     fetchRecentFeedback();
   }, [limit]);
+
+  const getColorBySentiment = (sentiment: string) => {
+    switch (sentiment.toLowerCase()) {
+      case "negative review":
+        return "red";
+      case "positive review":
+        return "green";
+      case "neutral review":
+        return "gold";
+      default:
+        return "black"; // 기본 색상
+    }
+  };
 
   return (
     <Card
@@ -56,8 +71,13 @@ export const DashboardRecentReviews = ({ limit = 5 }: { limit?: number }) => {
         dataSource={recentFeedback}
         renderItem={(item) => (
           <List.Item>
-            <Typography.Text strong>{item.sentiment}:</Typography.Text>{" "}
-            {item.review}
+            <Typography.Text
+              strong
+              style={{ color: getColorBySentiment(item.sentiment) }}
+            >
+              {item.sentiment}:
+            </Typography.Text>{" "}
+            {item.review} (Score: {item.score})
           </List.Item>
         )}
       />
