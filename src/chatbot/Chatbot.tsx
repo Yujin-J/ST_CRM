@@ -15,7 +15,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "bot",
-      content: "안녕하세요. CRM 시스템 데이터베이스를 동작하는 AI 챗봇 비서입니다. 어떻게 도와드릴까요?",
+      content: "Hello. I'm an AI chatbot assistant working with a CRM database system. How can I help you?",
       timestamp: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -74,6 +74,12 @@ const Chatbot = () => {
         ${userMessage}
 
         DB에서 답변을 찾아 JSON 형식으로 알려줘.
+        DB에서 요청하신 데이터를 검색해 JSON 형식으로 답변해. 
+        질문 유형에 따라 "intent" 필드를 추가하고, 다음 값 중 하나를 지정해:
+        - "interaction_search": interaction에 관한 질문일 경우
+        - "customer_search": customer에 관한 질문일 경우
+        - "contact_search": contact에 관한 질문일 경우
+        답변은 각 컬렉션의 필드, 값만 포함하도록해.
         없으면 "요청하신 데이터는 현재 데이터베이스에 없습니다."라고 답변해.
       `;
 
