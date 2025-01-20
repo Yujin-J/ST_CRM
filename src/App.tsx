@@ -12,7 +12,7 @@ import routerProvider, {
   DocumentTitleHandler,
 } from "@refinedev/react-router";
 import { BrowserRouter } from "react-router";
-import { App as AntdApp, ConfigProvider } from "antd";
+import { App as AntdApp, ConfigProvider, Drawer } from "antd";
 
 import {
   firebaseAuth,
@@ -22,14 +22,22 @@ import {
 import "@refinedev/antd/dist/reset.css";
 import { AppRoutes } from "./routes";
 import Chatbot from "./chatbot/Chatbot"; // Chatbot 컴포넌트 import
+import { useState } from "react";
+import NotificationComponent from "./notification/NotificationComponent";
 
 const App: React.FC = () => {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const toggleDrawer = () => {
+    setIsDrawerOpen((prev) => !prev);
+  };
+
   return (
     <BrowserRouter>
       <ConfigProvider theme={RefineThemes.Blue}>
         <AntdApp>
-            {/* 항상 렌더링되는 Chatbot 컴포넌트 */}
-            <Chatbot />
+          {/* 항상 렌더링되는 Chatbot 컴포넌트 */}
+          <Chatbot />
           <Refine
             legacyAuthProvider={firebaseAuth.getAuthProvider()}
             dataProvider={firestoreDataProvider.getDataProvider()}
@@ -78,7 +86,20 @@ const App: React.FC = () => {
               },
             ]}
           >
-            <AppRoutes />
+            <AppRoutes toggleDrawer={toggleDrawer} />
+            <Drawer
+              title="Notifications"
+              placement="right"
+              closable
+              onClose={toggleDrawer}
+              open={isDrawerOpen}
+              width={400}
+            >
+              <NotificationComponent
+                onOpen={toggleDrawer}
+                isOpen={isDrawerOpen}
+              />
+            </Drawer>
             <UnsavedChangesNotifier />
             <DocumentTitleHandler />
           </Refine>

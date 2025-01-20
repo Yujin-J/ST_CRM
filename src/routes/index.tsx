@@ -6,8 +6,13 @@ import {
   Header,
   PageHeader,
   ThemedTitleV2,
+  ThemedSiderV2,
 } from "@refinedev/antd";
-import { GoogleOutlined, GithubOutlined } from "@ant-design/icons";
+import {
+  GoogleOutlined,
+  GithubOutlined,
+  BellOutlined,
+} from "@ant-design/icons";
 import { NavigateToResource, CatchAllNavigate } from "@refinedev/react-router";
 import { Routes, Route, Outlet, Link } from "react-router";
 
@@ -33,8 +38,13 @@ import {
 
 // ProcessInteraction 컴포넌트 import
 import { InteractionTable } from "../pages/ProcessInteraction";
+import { Menu } from "antd";
 
-export const AppRoutes = () => {
+interface AppRoutesProps {
+  toggleDrawer: () => void;
+}
+
+export const AppRoutes: React.FC<AppRoutesProps> = ({ toggleDrawer }) => {
   return (
     <Routes>
       <Route
@@ -44,10 +54,26 @@ export const AppRoutes = () => {
             fallback={<CatchAllNavigate to="/login" />}
           >
             <ThemedLayoutV2
-              Title={({ collapsed }) => (
-                <ThemedTitleV2
-                  collapsed={collapsed}
-                  text="CRM"
+              Sider={() => (
+                <ThemedSiderV2
+                  Title={({ collapsed }) => (
+                    <ThemedTitleV2 collapsed={collapsed} text="CRM" />
+                  )}
+                  render={({ items, logout, collapsed }) => {
+                    return (
+                      <>
+                        {items}
+                        <Menu.Item
+                          key="notifications"
+                          icon={<BellOutlined />}
+                          onClick={() => toggleDrawer()}
+                        >
+                          Notifications
+                        </Menu.Item>
+                        {logout}
+                      </>
+                    );
+                  }}
                 />
               )}
             >
