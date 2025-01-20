@@ -1,5 +1,6 @@
 import axios from "axios";
 import Papa from "papaparse";
+import { text } from "stream/consumers";
 
 const AI_API_URL = import.meta.env.VITE_AI_API_URL;
 const AI_API_KEY = import.meta.env.VITE_AI_API_KEY;
@@ -54,7 +55,8 @@ export const callAIStudio = async (
       ],
     }));
 
-    console.log("여기가 안 되나?");
+    console.log(contents);
+
     // API 요청
     const response = await axios.post(
       `${AI_API_URL}?key=${AI_API_KEY}`,
