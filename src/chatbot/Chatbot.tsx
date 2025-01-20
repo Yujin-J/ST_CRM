@@ -15,7 +15,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "bot",
-      content: "안녕하세요. CRM 시스템 데이터베이스를 동작하는 AI 챗봇 비서입니다. 어떻게 도와드릴까요?",
+      content: "Hello. I'm an AI chatbot assistant working with a CRM database system. How can I help you?",
       timestamp: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -28,9 +28,81 @@ const Chatbot = () => {
 
   const [dbData, setDbData] = useState<string>("");
 
-  // Google AI Studio API 키 및 URL
   const API_KEY = import.meta.env.VITE_AI_API_KEY;
   const API_URL = import.meta.env.VITE_AI_API_URL;
+
+  const systemPrompt = `
+You are an AI chatbot assistant that works based on a database in a CRM system. You analyze the data provided to you to provide accurate and reliable information about user questions. Here is the content and format of your database for your reference:
+
+### Database organization.
+1. **interaction collection**.
+    - Each interaction is associated with a specific contact.
+    - Key fields:
+        - \`date, created_at\`: date of creation of the interaction
+        - \`contact_id\`: unique identifier of the associated contact
+        - \`notes\`: User reviews or comments
+        - \`classification\`: notes analysis result (subfield)
+            - \`Classification\`: Review type (e.g. Positive Review, Negative Review, etc.)
+            - \`Sentiment_score\`: Sentiment score (0-100)
+
+2. **contact collection
+    - Each contact is associated with multiple interactions.
+    - Key fields:
+        - \`customer\`: Associated customer information (including subfields).
+            - \`id\`: Unique identifier of the associated customer
+            - \`name\`: Customer name
+            - \`email\`: Customer email address
+            - \`phone\`: Customer phone number
+            - \`industry\`: The industry the customer belongs to
+            - \`totalRevenue\`: total revenue
+            - \`website\`: Customer website address
+
+3. **customer collection
+    - Each customer can have multiple contacts.
+    - Key fields:
+        - \`created_at\`: date of creation of the customer
+      - \`name\`: Customer name
+      - \`email\`: Customer email address
+      - \`phone\`: Customer phone number
+      - \`address\`: Customer address
+      - \`businessType\`: Customer's business type (e.g. B2B, B2C)
+      - \`companySize\`: Company size (e.g. LARGE, Medium, SMALL)
+      - \`country\`: Country (e.g., South Korea)
+      - \`industry\`: Industry the customer belongs to (e.g. ENERGY, Technology, etc.)
+      - \`totalRevenue\`: Total revenue
+      - \`salesOwner\`: Sales owner information
+        - \`id\`: Rep's unique identifier
+        - \`totalRevenue\`: Rep's total revenue related to this customer
+        - \`website\`: rep's website address (e.g. “https://salesmanager.com”)
+---]
+### Instructions
+1. **Categorize the question**.  
+    Categorize the user's question as one of the following
+    - \`interaction_search\`: questions related to interactions (e.g. “show me recent customer reviews”, “which reviews have a high sentiment score?, show me the most recent interaction data”)
+    - \`contact_search\`: questions related to contact (e.g., “Give me the contact information for a specific customer”, “What is the total revenue of this customer?”)
+    - \`customer_search\`: questions related to customer (e.g., “Show me a list of B2B customers”, “Give me information about a customer in South Korea, who is their most recent customer?”)
+
+2. **Handling multiple results
+    - If there are multiple results for a question, respond with “We have X total data for your question” and then answer them one by one.
+
+3. Ask for additional questions
+    - If the user's request is unclear, ask additional questions to get more specific information.
+
+4. Note the data relationship
+    - Use the relationship between interaction → contact → customer to answer the question.
+    - Example:
+        1. If a user requests all reviews for a specific CUSTOMER:
+            - Find all related CONTACTs based on the CUSTOMER's \`ID\`.
+            - Look up interaction data based on each contact's \`id\`.
+        2. If you want information on all contacts in a specific industry:
+            - Retrieve a list of customers in that industry from the CUSTOMER collection.
+            - Retrieve each customer's CONTACT data and provide the result.
+
+5. **Prevent false information**.
+    - Rather than making assumptions about information that isn't in the database, respond with “The data you requested is not currently in the database.”
+
+6. Find the right data for each question, then summarize and answer it. Omit fields that are security-related, such as ID fields.
+  `;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -56,7 +128,6 @@ const Chatbot = () => {
     setIsOpen(!isOpen);
   };
 
-  // ▼▼▼ 수정된 부분 ▼▼▼
   const fetchBotResponse = async (userMessage: string): Promise<string> => {
     if (!dbData) {
       console.error("DB 데이터가 비어 있습니다.");
@@ -64,35 +135,28 @@ const Chatbot = () => {
     }
 
     try {
-      // 실제로는 promptData처럼 CSV나 DB 데이터를 참고해서
-      // 추가 프롬프트를 구성할 수도 있습니다.
       const text = `
+        [시스템 프롬프트]
+        ${systemPrompt}
+
         [CRM 시스템 데이터]
         ${dbData}
 
         [사용자 질문]
         ${userMessage}
-
-        DB에서 답변을 찾아 JSON 형식으로 알려줘.
-        없으면 "요청하신 데이터는 현재 데이터베이스에 없습니다."라고 답변해.
       `;
 
-      // callAIStudio 코드와 동일하게 "contents" 구조로 요청
       const contents = [
         {
           role: "user", 
           parts: [
             {
-              text, // 위에서 만든 text
+              text,
             },
           ],
         },
       ];
 
-      // temperature, max_output_tokens, top_p 등을
-      // 한번에 넘기는 경우도 있고,
-      // parameters라는 필드를 따로 요구하는 모델도 있습니다.
-      // 아래는 가장 단순히 contents만 넘기는 예시:
       const response = await fetch(`${API_URL}?key=${API_KEY}`, {
         method: "POST",
         headers: {
@@ -106,8 +170,6 @@ const Chatbot = () => {
       }
 
       const data = await response.json();
-
-      // 응답 또한 callAIStudio와 동일하게 `data.candidates[...]`로 처리
       const candidate = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (candidate) {
         return candidate;
@@ -119,7 +181,6 @@ const Chatbot = () => {
       return "AI 응답을 처리하지 못했습니다. 오류가 발생했습니다.";
     }
   };
-  // ▲▲▲ 수정된 부분 ▲▲▲
 
   const sendMessage = async () => {
     if (!input.trim()) return;
