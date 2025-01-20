@@ -7,7 +7,8 @@ import { firestoreDatabase_base as db } from "../../../../helpers/firebase/fireb
 type RecentFeedbackData = {
   review: string;
   sentiment: string;
-  score: number; // 점수를 추가합니다.
+  score: number;
+  createdAt: string; // 추가: ISO 형식의 날짜 및 시간
 };
 
 export const DashboardRecentReviews = ({ limit = 5 }: { limit?: number }) => {
@@ -17,15 +18,16 @@ export const DashboardRecentReviews = ({ limit = 5 }: { limit?: number }) => {
     const fetchRecentFeedback = async () => {
       try {
         const interactionRef = collection(db, "interaction");
-        const q = query(interactionRef, orderBy("date", "desc"));
+        const q = query(interactionRef, orderBy("created_at", "desc")); // 수정: created_at 기준 정렬
         const querySnapshot = await getDocs(q);
 
-        const feedbackData = querySnapshot.docs.map((doc) => {
+        const feedbackData: RecentFeedbackData[] = querySnapshot.docs.map((doc) => {
           const data = doc.data();
           return {
             review: data.notes || "", // notes 필드 가져오기
             sentiment: data.classification?.Classification || "Unknown", // classification.Classification 가져오기
             score: data.classification?.Sentiment_score || 0, // classification.Sentiment_score 가져오기
+            createdAt: data.created_at || "", // created_at 필드 추가
           };
         });
 
@@ -78,6 +80,12 @@ export const DashboardRecentReviews = ({ limit = 5 }: { limit?: number }) => {
               {item.sentiment}:
             </Typography.Text>{" "}
             {item.review} (Score: {item.score})
+            <br />
+            <Typography.Text type="secondary">
+              {item.createdAt
+                ? new Date(item.createdAt).toLocaleString()
+                : ""}
+            </Typography.Text>
           </List.Item>
         )}
       />
