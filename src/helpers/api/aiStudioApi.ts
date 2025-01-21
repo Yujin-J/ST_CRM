@@ -75,7 +75,7 @@ export const callAIStudio = async (
       const responseText =
         response.data.candidates[index]?.content.parts[0]?.text ||
         "No classification";
-      
+
       const splitIndex = responseText.indexOf("\n\n");
       const classification =
         splitIndex !== -1
