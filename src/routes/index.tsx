@@ -125,28 +125,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
           </Authenticated>
         }
       >
-        <Route
-          path="/login"
-          element={
-            <AuthPage
-              type="login"
-              providers={[
-                {
-                  name: "google",
-                  label: "Sign in with Google",
-                  icon: (
-                    <GoogleOutlined
-                      style={{
-                        fontSize: 24,
-                        lineHeight: 0,
-                      }}
-                    />
-                  ),
-                },
-              ]}
-            />
-          }
-        />
+        <Route path="/login" element={<AuthPage type="login" />} />
         <Route
           path="/register"
           element={

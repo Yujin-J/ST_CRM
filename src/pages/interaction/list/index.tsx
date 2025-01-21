@@ -1,12 +1,17 @@
 import React, { useMemo, useState } from "react";
-import {
-  CreateButton,
-  EditButton,
-  List,
-} from "@refinedev/antd";
+import { CreateButton, EditButton, List } from "@refinedev/antd";
 import { useGo, useList, useDelete, useMany } from "@refinedev/core";
 import { SearchOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Input, Space, Table, Popconfirm, Button, DatePicker, message, Tooltip } from "antd";
+import {
+  Input,
+  Space,
+  Table,
+  Popconfirm,
+  Button,
+  DatePicker,
+  message,
+  Tooltip,
+} from "antd";
 import { PaginationTotal } from "../../../components/pagination-total";
 import { Text } from "../../../components/text";
 import { CustomAvatar } from "../../../components/custom-avatar";
@@ -37,11 +42,19 @@ type Contact = {
 export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
   const go = useGo();
   const [searchText, setSearchText] = useState("");
-  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
-  const [classificationFilter, setClassificationFilter] = useState<string | null>(null); // Classification 필터 상태 추가
+  const [dateRange, setDateRange] = useState<
+    [Dayjs | null, Dayjs | null] | null
+  >(null);
+  const [classificationFilter, setClassificationFilter] = useState<
+    string | null
+  >(null); // Classification 필터 상태 추가
   const [analyzingIds, setAnalyzingIds] = useState<Record<string, boolean>>({});
 
-  const { data: interactionData, isLoading, refetch } = useList<Interaction, Error>({
+  const {
+    data: interactionData,
+    isLoading,
+    refetch,
+  } = useList<Interaction>({
     resource: "interaction",
     sorters: [
       {
@@ -63,15 +76,17 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
     return Array.from(new Set(allIds));
   }, [interactionData?.data]);
 
-  const { data: contactsData, isLoading: isContactsLoading } = useMany<Contact, Error>({
-    resource: "contact",
-    ids: contactIds,
-    queryOptions: {
-      onSuccess: (fetchedContacts) => {
-        console.log("Fetched Contacts:", fetchedContacts?.data);
+  const { data: contactsData, isLoading: isContactsLoading } = useMany<Contact>(
+    {
+      resource: "contact",
+      ids: contactIds as string[],
+      queryOptions: {
+        onSuccess: (fetchedContacts) => {
+          console.log("Fetched Contacts:", fetchedContacts?.data);
+        },
       },
-    },
-  });
+    }
+  );
 
   const contactMap = useMemo(() => {
     const map: Record<string, { name: string; avatarUrl?: string }> = {};
@@ -100,7 +115,7 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
       return {
         ...interaction,
         contactName: contactInfo.name ?? "No contact name",
-        contactAvatar: contactInfo.avatarUrl ?? "",
+        contactAvatar: contactInfo.avatarUrl ?? undefined,
         Classification: interaction.classification?.Classification || "N/A",
         Sentiment_score: interaction.classification?.Sentiment_score ?? "N/A",
         notes: interaction.notes || "No notes available",
@@ -117,15 +132,15 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
         interaction.classification?.Sentiment_score,
         interaction.contact_id,
       ];
-  
-const matchesSearch = searchTarget.some((field) =>
-    field?.toString().toLowerCase().includes(searchText.toLowerCase())
-);
 
-  
+      const matchesSearch = searchTarget.some((field) =>
+        field?.toString().toLowerCase().includes(searchText.toLowerCase())
+      );
+
       const matchesClassification =
-        !classificationFilter || interaction.Classification === classificationFilter;
-  
+        !classificationFilter ||
+        interaction.Classification === classificationFilter;
+
       let matchesDate = true;
       if (dateRange && dateRange[0] && dateRange[1]) {
         const interactionDate = dayjs(interaction.createdAt);
@@ -133,7 +148,7 @@ const matchesSearch = searchTarget.some((field) =>
           interactionDate.isAfter(dateRange[0].startOf("day")) &&
           interactionDate.isBefore(dateRange[1].endOf("day"));
       }
-  
+
       return matchesSearch && matchesDate && matchesClassification;
     });
   }, [interactions, searchText, dateRange, classificationFilter]);
@@ -157,8 +172,8 @@ const matchesSearch = searchTarget.some((field) =>
     );
   };
 
-   // Analyze 버튼 클릭 핸들러
-   const handleAnalyze = async (interaction: Interaction) => {
+  // Analyze 버튼 클릭 핸들러
+  const handleAnalyze = async (interaction: Interaction) => {
     const id = interaction.id;
     setAnalyzingIds((prev) => ({ ...prev, [id]: true }));
 
@@ -191,7 +206,7 @@ const matchesSearch = searchTarget.some((field) =>
   const handleDateChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
     setDateRange(dates);
   };
-  
+
   // 감정 분류에 따른 색상 반환 함수
   const getColorBySentiment = (sentiment: string) => {
     switch (sentiment.toLowerCase()) {
@@ -250,7 +265,9 @@ const matchesSearch = searchTarget.some((field) =>
       <Table
         dataSource={filteredInteractions}
         onChange={(pagination, filters, sorter) => {
-          const classificationFilterValue = filters.Classification?.[0] as string | undefined;
+          const classificationFilterValue = filters.Classification?.[0] as
+            | string
+            | undefined;
           setClassificationFilter(classificationFilterValue || null);
         }}
         pagination={{
@@ -259,7 +276,10 @@ const matchesSearch = searchTarget.some((field) =>
           pageSizeOptions: ["12", "24", "48", "96"],
           position: ["bottomCenter"],
           showTotal: (total) => (
-            <PaginationTotal total={filteredInteractions.length} entityName="interactions" />
+            <PaginationTotal
+              total={filteredInteractions.length}
+              entityName="interactions"
+            />
           ),
         }}
         rowKey="id"
@@ -269,7 +289,9 @@ const matchesSearch = searchTarget.some((field) =>
           dataIndex="createdAt"
           title="Date & Time"
           width={150} // Fixed width
-          render={(text) => <Text>{dayjs(text).format("YYYY-MM-DD HH:mm:ss")}</Text>}
+          render={(text) => (
+            <Text>{dayjs(text).format("YYYY-MM-DD HH:mm:ss")}</Text>
+          )}
           sorter={(a, b) =>
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           }
@@ -278,10 +300,13 @@ const matchesSearch = searchTarget.some((field) =>
         <Table.Column
           title="Contact"
           dataIndex="contactName"
-          width={200} // Fixed width
           render={(_, record) => (
             <Space>
-              <CustomAvatar shape="square" name={record.contactName} src={record.contactAvatar} />
+              <CustomAvatar
+                shape="circle"
+                name={record.contactName}
+                src={record.contactAvatar}
+              />
               <Text>{record.contactName}</Text>
             </Space>
           )}
@@ -291,7 +316,9 @@ const matchesSearch = searchTarget.some((field) =>
           title="Classification"
           width={200} // Fixed width
           render={(text) => (
-            <Text style={{ color: getColorBySentiment(text), fontWeight: "bold" }}>
+            <Text
+              style={{ color: getColorBySentiment(text), fontWeight: "bold" }}
+            >
               {text}
             </Text>
           )}
@@ -307,13 +334,20 @@ const matchesSearch = searchTarget.some((field) =>
           title="Sentiment Score"
           width={150} // Fixed width
           render={(text, record) => (
-            <Text style={{ color: getColorBySentiment(record.Classification), fontWeight: "bold" }}>
+            <Text
+              style={{
+                color: getColorBySentiment(record.Classification),
+                fontWeight: "bold",
+              }}
+            >
               {text}
             </Text>
           )}
           sorter={(a, b) => {
-            const scoreA = typeof a.Sentiment_score === "number" ? a.Sentiment_score : 0;
-            const scoreB = typeof b.Sentiment_score === "number" ? b.Sentiment_score : 0;
+            const scoreA =
+              typeof a.Sentiment_score === "number" ? a.Sentiment_score : 0;
+            const scoreB =
+              typeof b.Sentiment_score === "number" ? b.Sentiment_score : 0;
             return scoreA - scoreB;
           }}
         />
@@ -331,7 +365,7 @@ const matchesSearch = searchTarget.some((field) =>
           title="Actions"
           dataIndex="id"
           width={130} // Fixed width
-          render={(value, record) => (
+          render={(value, record: Interaction) => (
             <Space>
               <EditButton hideText size="small" recordItemId={value} />
               {/* Analyze 버튼 */}

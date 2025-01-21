@@ -47,11 +47,13 @@ const App: React.FC = () => {
     const fetchUnreadNotifications = async () => {
       try {
         // notifications 컬렉션에서 모든 문서 가져오기
-        const snapshot = await getDocs(collection(firestoreDatabase_base, "notifications"));
+        const snapshot = await getDocs(
+          collection(firestoreDatabase_base, "notifications")
+        );
         const notificationsData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        })) as Array<{ time: string }>;
+        })) as Array<{ id: string; time: string }>;
 
         // 시간 순 정렬(옵션 - 필요 시)
         notificationsData.sort(
