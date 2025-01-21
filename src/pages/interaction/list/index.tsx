@@ -290,7 +290,11 @@ const matchesSearch = searchTarget.some((field) =>
           dataIndex="Classification"
           title="Classification"
           width={200} // Fixed width
-          render={(text) => <Text>{text}</Text>}
+          render={(text) => (
+            <Text style={{ color: getColorBySentiment(text), fontWeight: "bold" }}>
+              {text}
+            </Text>
+          )}
           filters={[
             { text: "Positive Review", value: "Positive Review" },
             { text: "Negative Review", value: "Negative Review" },
@@ -302,7 +306,11 @@ const matchesSearch = searchTarget.some((field) =>
           dataIndex="Sentiment_score"
           title="Sentiment Score"
           width={150} // Fixed width
-          render={(text) => <Text>{text}</Text>}
+          render={(text, record) => (
+            <Text style={{ color: getColorBySentiment(record.Classification), fontWeight: "bold" }}>
+              {text}
+            </Text>
+          )}
           sorter={(a, b) => {
             const scoreA = typeof a.Sentiment_score === "number" ? a.Sentiment_score : 0;
             const scoreB = typeof b.Sentiment_score === "number" ? b.Sentiment_score : 0;
