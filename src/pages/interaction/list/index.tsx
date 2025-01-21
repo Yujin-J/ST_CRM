@@ -268,6 +268,7 @@ const matchesSearch = searchTarget.some((field) =>
         <Table.Column
           dataIndex="createdAt"
           title="Date & Time"
+          width={150} // Fixed width
           render={(text) => <Text>{dayjs(text).format("YYYY-MM-DD HH:mm:ss")}</Text>}
           sorter={(a, b) =>
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
@@ -277,6 +278,7 @@ const matchesSearch = searchTarget.some((field) =>
         <Table.Column
           title="Contact"
           dataIndex="contactName"
+          width={200} // Fixed width
           render={(_, record) => (
             <Space>
               <CustomAvatar shape="square" name={record.contactName} src={record.contactAvatar} />
@@ -287,6 +289,7 @@ const matchesSearch = searchTarget.some((field) =>
         <Table.Column
           dataIndex="Classification"
           title="Classification"
+          width={200} // Fixed width
           render={(text) => <Text>{text}</Text>}
           filters={[
             { text: "Positive Review", value: "Positive Review" },
@@ -298,6 +301,7 @@ const matchesSearch = searchTarget.some((field) =>
         <Table.Column
           dataIndex="Sentiment_score"
           title="Sentiment Score"
+          width={150} // Fixed width
           render={(text) => <Text>{text}</Text>}
           sorter={(a, b) => {
             const scoreA = typeof a.Sentiment_score === "number" ? a.Sentiment_score : 0;
@@ -308,6 +312,7 @@ const matchesSearch = searchTarget.some((field) =>
         <Table.Column
           dataIndex="notes"
           title="Notes"
+          width={300} // Fixed width
           render={(text) => (
             <Tooltip title={text} mouseEnterDelay={0.5} mouseLeaveDelay={0.1}>
               <span>{text.length > 30 ? `${text.slice(0, 30)}...` : text}</span>
@@ -317,6 +322,7 @@ const matchesSearch = searchTarget.some((field) =>
         <Table.Column
           title="Actions"
           dataIndex="id"
+          width={130} // Fixed width
           render={(value, record) => (
             <Space>
               <EditButton hideText size="small" recordItemId={value} />
