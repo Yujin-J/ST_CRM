@@ -1,17 +1,12 @@
 import React, { useMemo, useState } from "react";
-import { CreateButton, EditButton, List } from "@refinedev/antd";
+import {
+  CreateButton,
+  EditButton,
+  List,
+} from "@refinedev/antd";
 import { useGo, useList, useDelete, useMany } from "@refinedev/core";
 import { SearchOutlined, DeleteOutlined } from "@ant-design/icons";
-import {
-  Input,
-  Space,
-  Table,
-  Popconfirm,
-  Button,
-  DatePicker,
-  message,
-  Tooltip,
-} from "antd";
+import { Input, Space, Table, Popconfirm, Button, DatePicker, message, Tooltip } from "antd";
 import { PaginationTotal } from "../../../components/pagination-total";
 import { Text } from "../../../components/text";
 import { CustomAvatar } from "../../../components/custom-avatar";
@@ -75,8 +70,8 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
       onSuccess: (fetchedContacts) => {
         console.log("Fetched Contacts:", fetchedContacts?.data);
       },
-    }
-  );
+    },
+  });
 
   const contactMap = useMemo(() => {
     const map: Record<string, { name: string; avatarUrl?: string }> = {};
@@ -130,6 +125,7 @@ const matchesSearch = searchTarget.some((field) =>
   
       const matchesClassification =
         !classificationFilter || interaction.Classification === classificationFilter;
+  
       let matchesDate = true;
       if (dateRange && dateRange[0] && dateRange[1]) {
         const interactionDate = dayjs(interaction.createdAt);
@@ -316,10 +312,8 @@ const matchesSearch = searchTarget.some((field) =>
             </Text>
           )}
           sorter={(a, b) => {
-            const scoreA =
-              typeof a.Sentiment_score === "number" ? a.Sentiment_score : 0;
-            const scoreB =
-              typeof b.Sentiment_score === "number" ? b.Sentiment_score : 0;
+            const scoreA = typeof a.Sentiment_score === "number" ? a.Sentiment_score : 0;
+            const scoreB = typeof b.Sentiment_score === "number" ? b.Sentiment_score : 0;
             return scoreA - scoreB;
           }}
         />
