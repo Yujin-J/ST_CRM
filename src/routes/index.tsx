@@ -1,10 +1,9 @@
-import { Authenticated, useNavigation, AuthProvider } from "@refinedev/core";
+// index.tsx
+import { Authenticated } from "@refinedev/core";
 import {
   ThemedLayoutV2,
   ErrorComponent,
   AuthPage,
-  Header,
-  PageHeader,
   ThemedTitleV2,
   ThemedSiderV2,
 } from "@refinedev/antd";
@@ -14,7 +13,8 @@ import {
   BellOutlined,
 } from "@ant-design/icons";
 import { NavigateToResource, CatchAllNavigate } from "@refinedev/react-router";
-import { Routes, Route, Outlet, Link } from "react-router";
+import { Routes, Route, Outlet } from "react-router";
+import { Menu, Badge } from "antd";
 
 import { PostList, PostEdit, PostShow } from "../pages/posts";
 import { DashboardPage } from "../pages/dashboard";
@@ -36,15 +36,17 @@ import {
   InteractionListPage,
 } from "../pages/interaction";
 
-// ProcessInteraction 컴포넌트 import
 import { InteractionTable } from "../pages/ProcessInteraction";
-import { Menu } from "antd";
 
 interface AppRoutesProps {
   toggleDrawer: () => void;
+  unreadCount: number; // 추가
 }
 
-export const AppRoutes: React.FC<AppRoutesProps> = ({ toggleDrawer }) => {
+export const AppRoutes: React.FC<AppRoutesProps> = ({
+  toggleDrawer,
+  unreadCount,
+}) => {
   return (
     <Routes>
       <Route
@@ -63,10 +65,15 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({ toggleDrawer }) => {
                     return (
                       <>
                         {items}
+                        {/* unreadCount가 1 이상이면 dot 표시 */}
                         <Menu.Item
                           key="notifications"
-                          icon={<BellOutlined />}
-                          onClick={() => toggleDrawer()}
+                          icon={
+                            <Badge dot={unreadCount > 0} offset={[-20, 0]}>
+                              <BellOutlined />
+                            </Badge>
+                          }
+                          onClick={toggleDrawer}
                         >
                           Notifications
                         </Menu.Item>
@@ -96,7 +103,6 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({ toggleDrawer }) => {
           <Route path="edit/:id" element={<CustomerEditPage />} />
         </Route>
 
-        {/* Contacts 라우트 추가 */}
         <Route path="/contacts">
           <Route index element={<ContactListPage />} />
           <Route path="new" element={<ContactCreatePage />} />
@@ -109,7 +115,6 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({ toggleDrawer }) => {
           <Route path="edit/:id" element={<InteractionEditPage />} />
         </Route>
 
-        {/* ProcessInteraction 라우트 추가 */}
         <Route path="/process-interaction" element={<InteractionTable />} />
       </Route>
 
