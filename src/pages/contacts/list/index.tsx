@@ -7,7 +7,6 @@ import {
   List,
 } from "@refinedev/antd";
 import { useGo, useList } from "@refinedev/core";
-import { SearchOutlined } from "@ant-design/icons";
 import { Input, Space, Table } from "antd";
 import { PaginationTotal } from "../../../components/pagination-total";
 import { CustomAvatar } from "../../../components/custom-avatar";
@@ -90,15 +89,6 @@ export const ContactListPage = ({ children }: React.PropsWithChildren) => {
           <Table.Column
             dataIndex="name"
             title="Contact name"
-            filterIcon={<SearchOutlined />}
-            filterDropdown={(props) => (
-              <FilterDropdown {...props}>
-                <Input
-                  placeholder="Search Contact"
-                  onChange={(e) => setSearchText(e.target.value)}
-                />
-              </FilterDropdown>
-            )}
             render={(_, record) => (
               <Space>
                 <CustomAvatar

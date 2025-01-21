@@ -3,6 +3,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../helpers/firebase/firebaseConfig";
 import { getMultipleCollections } from "../helpers/firebase/firestoreHelpers";
 import "./Chatbot.css";
+import ReactMarkdown from "react-markdown";
 
 // 메시지 타입 정의
 type Message = {
@@ -26,7 +27,6 @@ const Chatbot = () => {
   const [input, setInput] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   const [dbData, setDbData] = useState<string>("");
 
   const API_KEY = import.meta.env.VITE_AI_API_KEY;
@@ -96,6 +96,7 @@ You are an AI chatbot assistant that works based on a database in a CRM system. 
         - \`interaction_search\`: Questions related to interactions (e.g., “Show me recent customer reviews”, “Which reviews have a high sentiment score?”, “Show me the most recent interaction data”)
         - \`contact_search\`: Questions related to contacts (e.g., “Give me the contact information for a specific customer”, “What is the total revenue of this customer?”)
         - \`customer_search\`: Questions related to customers (e.g., “Show me a list of B2B customers”, “Give me information about a customer in South Korea, who is their most recent customer?”)
+    - But don't mention the category in the answer.
 
 2. **Handling Multiple Results**
     - If there are multiple results for a question, respond with “We have X total data for your question” and then answer them one by one.
@@ -105,7 +106,7 @@ You are an AI chatbot assistant that works based on a database in a CRM system. 
 
 4. **Data Relationships**
     - **Utilize the relationships** between \`interaction\` → \`contact\` → \`customer\` -> \`user\` to accurately answer questions.
-        - **Example 1:** If a user requests all reviews for a specific customer:
+            - **Example 1:** If a user requests all reviews for a specific customer:
             1. Find all related contacts based on the customer's \`ID\`.
             2. Retrieve interaction data based on each contact's \`id\`.
         - **Example 2:** If a user requests information on all contacts in a specific industry:
@@ -116,6 +117,7 @@ You are an AI chatbot assistant that works based on a database in a CRM system. 
     - **Do not make assumptions** about information not present in the database.
     - If data is missing, respond with “The data you requested is not currently in the database.”
 
+
 6. **Summarize and Respond**
     - **Find the relevant data** for each question.
     - **Summarize** the information clearly.
@@ -123,32 +125,6 @@ You are an AI chatbot assistant that works based on a database in a CRM system. 
 
 7. **Formatting and Clarity**
     - Ensure that responses are **clear, concise, and well-formatted**.
-    - Use appropriate language constructs to enhance readability.
-
----
-
-### Example Workflow
-
-#### Example 1: English Input
-
-1. **User Input:** “Show me recent customer reviews”
-2. **Categorization:** \`interaction_search\`
-3. **Data Retrieval:**
-    - Fetch recent interactions from the \`interaction\` collection.
-    - Summarize the reviews and sentiment scores.
-4. **Response:**
-    - “There are 5 reviews.”
-    - Describe each review.
-
----
-
-### Additional Notes
-
-- **Error Handling:** Provide user-friendly error messages in English if something goes wrong.
-- **Performance Considerations:** Given that the entire database is being passed through the prompt, be mindful of token limits and optimize the prompt to include only necessary information.
-- **Initial Bot Message:** The initial bot message is in English to maintain consistency.
-
----
 `;
 
   useEffect(() => {
@@ -167,8 +143,7 @@ You are an AI chatbot assistant that works based on a database in a CRM system. 
           "customer",
           "user",
         ]);
-        const dbString = JSON.stringify(interactions, null, 2);
-        setDbData(dbString);
+        setDbData(JSON.stringify(interactions, null, 2));
       } catch (error) {
         console.error("Error loading data:", error);
       }
@@ -176,18 +151,12 @@ You are an AI chatbot assistant that works based on a database in a CRM system. 
     loadInteractionData();
   }, []);
 
-  const toggleChatbot = () => {
-    setIsOpen(!isOpen);
-  };
+  const toggleChatbot = () => setIsOpen(!isOpen);
 
   const fetchBotResponse = async (userMessage: string): Promise<string> => {
-    if (!dbData) {
-      console.error("DB 데이터가 비어 있습니다.");
-      return "Failed to load DB data. Please try again later.";
-    }
+    if (!dbData) return "Database is not loaded yet. Please try again later.";
 
-    try {
-      const prompt = `
+    const prompt = `
 [System Prompt]
 ${systemPrompt}
 
@@ -198,39 +167,27 @@ ${dbData}
 ${userMessage}
 `;
 
-      const contents = [
-        {
-          role: "user",
-          parts: [
-            {
-              text: prompt,
-            },
-          ],
-        },
-      ];
-
+    try {
       const response = await fetch(`${API_URL}?key=${API_KEY}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ contents }),
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+        }),
       });
 
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`API Error: ${response.status}`);
 
       const data = await response.json();
-      const candidate = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (candidate) {
-        return candidate;
-      } else {
-        return "Unable to process the response. Please try again.";
-      }
+      return (
+        data.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "Unable to retrieve response."
+      );
     } catch (error) {
       console.error("Error fetching AI response:", error);
-      return "Unable to process the AI response due to an error.";
+      return "Error occurred while processing your request.";
     }
   };
 
@@ -242,47 +199,36 @@ ${userMessage}
       minute: "2-digit",
     });
 
-    const newMessages = [
-      ...messages,
+    setMessages((prev) => [
+      ...prev,
       { role: "user", content: input, timestamp },
-    ];
-    setMessages(newMessages);
+    ]);
+
     setInput("");
     setIsLoading(true);
 
     const botResponse = await fetchBotResponse(input);
 
-    setMessages([
-      ...newMessages,
-      {
-        role: "bot",
-        content: botResponse,
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      },
+    setMessages((prev) => [
+      ...prev,
+      { role: "bot", content: botResponse, timestamp },
     ]);
+
     setIsLoading(false);
   };
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (!isAuthenticated) return null;
 
   return (
     <div>
       <button onClick={toggleChatbot} className="chatbot-button">
         💬
       </button>
-
       {isOpen && (
         <>
           <div className="chatbot-overlay" onClick={toggleChatbot}></div>
-
           <div className="chatbot-window">
             <div className="chatbot-header">CRM AI Chatbot</div>
-
             <div className="chatbot-content">
               {messages.map((message, index) => (
                 <div
@@ -291,7 +237,7 @@ ${userMessage}
                     message.role === "user" ? "user" : "bot"
                   }`}
                 >
-                  {message.content}
+                  <ReactMarkdown>{message.content}</ReactMarkdown>
                   <span className="timestamp">{message.timestamp}</span>
                 </div>
               ))}
@@ -299,7 +245,6 @@ ${userMessage}
                 <div className="chatbot-message bot">Responding...</div>
               )}
             </div>
-
             <div className="chatbot-input-container">
               <input
                 value={input}

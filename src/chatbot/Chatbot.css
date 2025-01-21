@@ -1,4 +1,3 @@
-/* src/chatbot/Chatbot.css */
 .chatbot-button {
     position: fixed;
     bottom: 20px;
@@ -31,6 +30,34 @@
     z-index: 999;
 }
 
+/* 화면 크기가 1024px 이하일 때 */
+@media (max-width: 1024px) {
+    .chatbot-window {
+        width: 600px;
+        height: 500px;
+    }
+}
+
+/* 화면 크기가 768px 이하일 때 */
+@media (max-width: 768px) {
+    .chatbot-window {
+        width: 90%; /* 화면 너비의 90%로 설정 */
+        height: 400px;
+        right: 5%; /* 중앙 정렬을 위한 여백 */
+        bottom: 20px;
+    }
+}
+
+/* 화면 크기가 480px 이하일 때 (스마트폰 화면) */
+@media (max-width: 480px) {
+    .chatbot-window {
+        width: 95%;
+        height: 300px;
+        right: 2.5%; /* 중앙 정렬을 위한 여백 */
+        bottom: 10px;
+    }
+}
+
 .chatbot-header {
     background-color: #007bff;
     color: white;
@@ -45,30 +72,32 @@
     flex: 1;
     padding: 10px;
     overflow-y: auto;
-    max-height: calc(100% - 30px); /* 필요 시 조정 */
+    max-height: calc(100% - 30px);
     display: flex;
     flex-direction: column;
+    gap: 10px;
 }
 
 .chatbot-message {
     margin: 5px 0;
-    padding: 10px;
+    padding: 12px;
     border-radius: 8px;
     max-width: 80%;
     word-wrap: break-word;
-    white-space: pre-wrap; /* 줄바꿈 보존 */
-    word-break: break-word; /* 단어 단위로 잘림 */
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: 'Arial', sans-serif;
 }
 
 .chatbot-message.user {
-    background-color: #007bff;
-    color: white;
+    background-color: #ffecb3;
+    color: #6d4c41;
     align-self: flex-end;
 }
 
 .chatbot-message.bot {
-    background-color: #f1f1f1;
-    color: black;
+    background-color: #e0f7fa;
+    color: #006064;
     align-self: flex-start;
 }
 
@@ -106,13 +135,8 @@
 }
 
 .timestamp {
-    font-size: 10px;
-    color: gray;
-    margin-left: 5px;
-}
-
-.chatbot-message .timestamp {
-    color: #030300; /* 원하는 색상으로 변경 */
-    font-size: 0.85em; /* 글자 크기 조정 */
-    margin-left: 5px; /* 메시지와의 간격 */
+    display: block;
+    font-size: 0.75em;
+    color: #9e9e9e;
+    margin-top: 4px;
 }
