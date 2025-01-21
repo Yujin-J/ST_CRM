@@ -1,12 +1,17 @@
 import React, { useMemo, useState } from "react";
-import {
-  CreateButton,
-  EditButton,
-  List,
-} from "@refinedev/antd";
+import { CreateButton, EditButton, List } from "@refinedev/antd";
 import { useGo, useList, useDelete, useMany } from "@refinedev/core";
 import { SearchOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Input, Space, Table, Popconfirm, Button, DatePicker, message, Tooltip } from "antd";
+import {
+  Input,
+  Space,
+  Table,
+  Popconfirm,
+  Button,
+  DatePicker,
+  message,
+  Tooltip,
+} from "antd";
 import { PaginationTotal } from "../../../components/pagination-total";
 import { Text } from "../../../components/text";
 import { CustomAvatar } from "../../../components/custom-avatar"; // 아바타 컴포넌트
@@ -37,7 +42,9 @@ type Contact = {
 export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
   const go = useGo();
   const [searchText, setSearchText] = useState("");
-  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+  const [dateRange, setDateRange] = useState<
+    [Dayjs | null, Dayjs | null] | null
+  >(null);
   const [analyzingIds, setAnalyzingIds] = useState<Record<string, boolean>>({});
 
   // 1) interaction 목록 불러오기
@@ -45,7 +52,7 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
     data: interactionData,
     isLoading,
     refetch,
-  } = useList<Interaction, Error>({
+  } = useList<Interaction>({
     resource: "interaction",
     sorters: [
       {
@@ -69,15 +76,17 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
   }, [interactionData?.data]);
 
   // contact DB에서 가져오기
-  const { data: contactsData, isLoading: isContactsLoading } = useMany<Contact, Error>({
-    resource: "contact",
-    ids: contactIds,
-    queryOptions: {
-      onSuccess: (fetchedContacts) => {
-        console.log("Fetched Contacts:", fetchedContacts?.data);
+  const { data: contactsData, isLoading: isContactsLoading } = useMany<Contact>(
+    {
+      resource: "contact",
+      ids: contactIds as string[],
+      queryOptions: {
+        onSuccess: (fetchedContacts) => {
+          console.log("Fetched Contacts:", fetchedContacts?.data);
+        },
       },
-    },
-  });
+    }
+  );
 
   // 3) contact_id -> { name, avatarUrl } 매핑용 객체 만들기
   const contactMap = useMemo(() => {
@@ -120,7 +129,9 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
   // 노트 및 날짜 범위 검색 필터링
   const filteredInteractions = useMemo(() => {
     return interactions.filter((interaction) => {
-      const matchesSearch = interaction.notes?.toLowerCase().includes(searchText.toLowerCase());
+      const matchesSearch = interaction.notes
+        ?.toLowerCase()
+        .includes(searchText.toLowerCase());
       let matchesDate = true;
 
       if (dateRange && dateRange[0] && dateRange[1]) {
@@ -266,7 +277,9 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
         <Table.Column
           dataIndex="createdAt"
           title="Date & Time"
-          render={(text) => <Text>{dayjs(text).format("YYYY-MM-DD HH:mm:ss")}</Text>}
+          render={(text) => (
+            <Text>{dayjs(text).format("YYYY-MM-DD HH:mm:ss")}</Text>
+          )}
           sorter={(a, b) =>
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           }
@@ -309,8 +322,10 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
           title="Sentiment Score"
           render={(text) => <Text>{text}</Text>}
           sorter={(a, b) => {
-            const scoreA = typeof a.Sentiment_score === "number" ? a.Sentiment_score : 0;
-            const scoreB = typeof b.Sentiment_score === "number" ? b.Sentiment_score : 0;
+            const scoreA =
+              typeof a.Sentiment_score === "number" ? a.Sentiment_score : 0;
+            const scoreB =
+              typeof b.Sentiment_score === "number" ? b.Sentiment_score : 0;
             return scoreA - scoreB;
           }}
         />
@@ -330,7 +345,7 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
         <Table.Column
           title="Actions"
           dataIndex="id"
-          render={(value, record) => (
+          render={(value, record: Interaction) => (
             <Space>
               {/* Edit 버튼 */}
               <EditButton hideText size="small" recordItemId={value} />

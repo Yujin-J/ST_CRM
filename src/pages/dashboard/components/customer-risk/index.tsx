@@ -9,6 +9,7 @@ interface Customer {
   riskLevel: string;
   daysSinceCreation: number; // 가입 후 지난 일수
   totalRevenue: number; // 총 매출
+  created_at: Date;
 }
 
 export const CustomerRisk: React.FC<{ limit?: number }> = ({ limit = 5 }) => {
@@ -22,7 +23,7 @@ export const CustomerRisk: React.FC<{ limit?: number }> = ({ limit = 5 }) => {
         const data = await fetchCustomerRiskData();
 
         // 고객 데이터에 추가 정보를 계산하여 포함
-        const enrichedCustomers = data.map((customer) => {
+        const enrichedCustomers = data.map((customer: Customer) => {
           const now = new Date();
           const createdAt = new Date(customer.created_at);
           const daysSinceCreation = Math.floor(

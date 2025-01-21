@@ -31,14 +31,16 @@ export const InteractionCreateModal = () => {
   };
 
   const onFinish = async (values: any) => {
-    const dateValue = values.date ? dayjs(values.date).format("YYYY-MM-DD") : "";
-  
+    const dateValue = values.date
+      ? dayjs(values.date).format("YYYY-MM-DD")
+      : "";
+
     const payload = {
       contact_id: values.contact_id || "",
       date: dateValue,
       notes: values.notes || "",
     };
-  
+
     createInteraction(
       {
         resource: "interaction",
@@ -47,24 +49,24 @@ export const InteractionCreateModal = () => {
       {
         onSuccess: async (createdData) => {
           console.log("Interaction created successfully:", payload);
-  
+
           // 성공 메시지 표시
           message.success("Interaction has been added successfully!");
-  
+
           // 분석 함수 호출
           const interactionId = createdData?.data?.id; // 생성된 데이터의 ID 가져오기
           if (interactionId) {
             try {
               const analysisResult = await callAIStudio(
-                [{ id: interactionId, notes: payload.notes }],
+                [{ id: interactionId as string, notes: payload.notes }],
                 "Review Classification"
               );
-  
+
               console.log("Analysis Result:", analysisResult);
-  
+
               // Firestore에 분석 결과 업데이트
               await updateDbWithChatbot(
-                interactionId,
+                interactionId as string,
                 "Review Classification",
                 "interaction",
                 {
@@ -72,13 +74,18 @@ export const InteractionCreateModal = () => {
                   Sentiment_score: analysisResult[0].Sentiment_score,
                 }
               );
-  
-              console.log(`Interaction ${interactionId} analyzed successfully!`);
+
+              console.log(
+                `Interaction ${interactionId} analyzed successfully!`
+              );
             } catch (error) {
-              console.error(`Error analyzing interaction ${interactionId}:`, error);
+              console.error(
+                `Error analyzing interaction ${interactionId}:`,
+                error
+              );
             }
           }
-  
+
           goToInteractionListPage(); // 생성 및 분석 후 이동
         },
         onError: (error) => {
@@ -87,7 +94,6 @@ export const InteractionCreateModal = () => {
       }
     );
   };
-  
 
   return (
     <Modal
