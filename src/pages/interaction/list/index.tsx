@@ -111,18 +111,29 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
 
   const filteredInteractions = useMemo(() => {
     return interactions.filter((interaction) => {
-      const matchesSearch = interaction.notes?.toLowerCase().includes(searchText.toLowerCase());
+      const searchTarget = [
+        interaction.notes,
+        interaction.classification?.Classification,
+        interaction.classification?.Sentiment_score,
+        interaction.contact_id,
+      ];
+  
+const matchesSearch = searchTarget.some((field) =>
+    field?.toString().toLowerCase().includes(searchText.toLowerCase())
+);
+
+  
       const matchesClassification =
         !classificationFilter || interaction.Classification === classificationFilter;
+  
       let matchesDate = true;
-
       if (dateRange && dateRange[0] && dateRange[1]) {
         const interactionDate = dayjs(interaction.createdAt);
         matchesDate =
           interactionDate.isAfter(dateRange[0].startOf("day")) &&
           interactionDate.isBefore(dateRange[1].endOf("day"));
       }
-
+  
       return matchesSearch && matchesDate && matchesClassification;
     });
   }, [interactions, searchText, dateRange, classificationFilter]);
@@ -228,7 +239,7 @@ export const InteractionListPage = ({ children }: React.PropsWithChildren) => {
         />
         {/* 노트 검색 필터 */}
         <Input
-          placeholder="Search Notes"
+          placeholder="Search by keywords"
           prefix={<SearchOutlined />}
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
