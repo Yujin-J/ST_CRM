@@ -1,11 +1,14 @@
 import { useGo, useList, useCreate } from "@refinedev/core";
-import { Form, Input, Modal, Select, DatePicker } from "antd";
+import { Form, Input, Modal, Select, DatePicker, message } from "antd";
 import { useState } from "react";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { SelectOptionWithAvatar } from "../../../components/select-option-with-avatar";
-import { message } from "antd";
 import { callAIStudio } from "../../../helpers/api/aiStudioApi"; // AI API 호출 함수
 import { updateDbWithChatbot } from "../../../helpers/firebase/firestoreHelpers"; // Firestore 업데이트 함수
+
+// dayjs에 utc 플러그인 추가
+dayjs.extend(utc);
 
 export const InteractionCreateModal = () => {
   const go = useGo();
@@ -31,13 +34,20 @@ export const InteractionCreateModal = () => {
   };
 
   const onFinish = async (values: any) => {
-    const dateValue = values.date
-      ? dayjs(values.date).format("YYYY-MM-DD")
-      : "";
+    // dateValue를 23:59:59.000Z 형태로 설정
 
+    // Payload를 생성(필요하다면 "date" 대신 "created_at"으로 key 변경)
     const payload = {
       contact_id: values.contact_id || "",
-      date: dateValue,
+      date: values.date ? dayjs(values.date).format("YYYY-MM-DD") : "", // DB 필드명이 date일 경우
+      created_at: values.date
+      ? dayjs(values.date)
+          .utc() // UTC 기준
+          .set("hour", 23)
+          .set("minute", 59)
+          .set("second", 59)
+          .format("YYYY-MM-DDTHH:mm:ss.000[Z]")
+      : "", // 만약 created_at 필드 사용 시
       notes: values.notes || "",
     };
 
@@ -49,12 +59,10 @@ export const InteractionCreateModal = () => {
       {
         onSuccess: async (createdData) => {
           console.log("Interaction created successfully:", payload);
-
-          // 성공 메시지 표시
           message.success("Interaction has been added successfully!");
 
-          // 분석 함수 호출
-          const interactionId = createdData?.data?.id; // 생성된 데이터의 ID 가져오기
+          // 생성된 Interaction의 ID
+          const interactionId = createdData?.data?.id;
           if (interactionId) {
             try {
               const analysisResult = await callAIStudio(
@@ -113,20 +121,19 @@ export const InteractionCreateModal = () => {
         >
           <Select
             placeholder="Select a contact"
-            // contact db에 있는 name, avatarUrl 정보를 띄워주고 value는 contact의 id
             options={contacts.map((contact) => ({
               value: contact.id ?? "",
               label: (
                 <SelectOptionWithAvatar
                   name={contact.name}
-                  avatarUrl={contact.avatarUrl} // 없으면 placeholder 또는 이니셜처리
+                  avatarUrl={contact.avatarUrl}
                 />
               ),
             }))}
           />
         </Form.Item>
 
-        {/* Date 입력 */}
+        {/* DatePicker (날짜 선택) */}
         <Form.Item
           label="Date"
           name="date"
@@ -135,7 +142,6 @@ export const InteractionCreateModal = () => {
           <DatePicker
             style={{ width: "100%" }}
             placeholder="Select date"
-            // 날짜 형식 지정 예시
             format="YYYY-MM-DD"
           />
         </Form.Item>
