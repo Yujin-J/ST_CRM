@@ -4,6 +4,13 @@
 
 React·TypeScript·Refine으로 구성한 CRM에 Firebase Authentication과 Firestore를 연결했습니다. 챗봇은 CRM에서 읽어 온 데이터를 질문과 함께 전달하고, 상담 분석 기능은 상담 메모의 분류와 감정 점수를 생성해 Firestore에 저장합니다.
 
+## 담당 역할 — 정유진
+
+- **GPT·Gemini 연동**
+- **Firebase 고객·상담 데이터 기반 챗봇 기능 구현**
+
+담당 경험에는 GPT와 Gemini 연동이 포함됩니다. 현재 공개된 코드에서 확인할 수 있는 AI 호출 경로는 Gemini 형식이며, 아래 구현 설명은 이 공개본을 기준으로 합니다.
+
 ## 주요 기능
 
 | 기능 | 구현 내용 |
